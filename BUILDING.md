@@ -15,10 +15,10 @@ This document contains instructions to compile and assemble the **DHUNLO** Andro
 
 ### Android SDK & Tooling
 * **Android SDK Command-Line Tools & Platform:**
-  * Compile SDK: `37` (Android 17 developer preview) / `34`–`36`
+  * Compile SDK: `37` (release 37, minorApiLevel 1)
   * Minimum SDK: `24` (Android 7.0)
-  * Target SDK: `35` (Android 15)
-  * Build-Tools: `36.0.0`
+  * Target SDK: `37`
+  * Build-Tools: `35.0.0` / `36.0.0`
 * **Android NDK & CMake:**
   * Required to compile native Opus audio decoders (`opusDecoder`).
   * NDK Version: `30.0.16248370` (or Android NDK r27b+)
