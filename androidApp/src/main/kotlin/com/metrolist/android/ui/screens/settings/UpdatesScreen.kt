@@ -468,7 +468,8 @@ fun UpdateDetailsScreen(
                         )
                     }
 
-                    UpdateFailure.CHECK -> {
+                    UpdateFailure.CHECK,
+                    UpdateFailure.DOWNGRADE -> {
                         stringResource(if (crashRecovery) Res.string.crash_updates_error else Res.string.updates_error)
                     }
                 }

@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.content.pm.Signature
 import android.os.Looper
 import kotlinx.coroutines.runBlocking
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -22,6 +23,10 @@ import java.util.concurrent.atomic.AtomicBoolean
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE, sdk = [33])
 class UpdateInstallationTest {
+    @After
+    fun tearDown() {
+        AppUpdateManager.trustedFingerprintsOverride = null
+    }
     @Test
     fun packageVerificationRunsOffMainAfterPublishingInstallingStateAndFailureResetsIt() =
         runBlocking {
@@ -85,17 +90,158 @@ class UpdateInstallationTest {
             assertEquals(AppUpdateState.Error(UpdateFailure.NO_APK, downloaded.release), AppUpdateManager.state.value)
         }
 
+    @Test
+    fun packageIdMismatchRejected() {
+        val context = RuntimeEnvironment.getApplication()
+        val file = File(context.cacheDir, "pkg-mismatch.apk").apply { writeText("APK fixture") }
+        val signer = Signature(byteArrayOf(1, 2, 3))
+        AppUpdateManager.trustedFingerprintsOverride = setOf(AppUpdateManager.sha256(signer.toByteArray()))
+        val packageManager = shadowOf(context.packageManager)
+        packageManager.getInternalMutablePackageInfo(context.packageName).apply {
+            signatures = arrayOf(signer)
+            versionCode = 1
+        }
+        packageManager.setPackageArchiveInfo(
+            file.absolutePath,
+            PackageInfo().apply {
+                packageName = "com.other.malicious"
+                signatures = arrayOf(signer)
+                versionCode = 2
+            },
+        )
+        try {
+            assertEquals(ApkIdentityResult.PACKAGE_MISMATCH, AppUpdateManager.checkApkIdentity(context, file))
+            assertFalse(AppUpdateManager.verifyApkIdentity(context, file))
+        } finally {
+            file.delete()
+        }
+    }
+
+    @Test
+    fun lowerOrEqualVersionCodeRejected() {
+        val context = RuntimeEnvironment.getApplication()
+        val file = File(context.cacheDir, "version-code.apk").apply { writeText("APK fixture") }
+        val signer = Signature(byteArrayOf(1, 2, 3))
+        AppUpdateManager.trustedFingerprintsOverride = setOf(AppUpdateManager.sha256(signer.toByteArray()))
+        val packageManager = shadowOf(context.packageManager)
+        packageManager.getInternalMutablePackageInfo(context.packageName).apply {
+            signatures = arrayOf(signer)
+            versionCode = 100
+        }
+        try {
+            // Equal versionCode
+            packageManager.setPackageArchiveInfo(
+                file.absolutePath,
+                PackageInfo().apply {
+                    packageName = context.packageName
+                    signatures = arrayOf(signer)
+                    versionCode = 100
+                },
+            )
+            assertEquals(ApkIdentityResult.DOWNGRADE, AppUpdateManager.checkApkIdentity(context, file))
+            assertFalse(AppUpdateManager.verifyApkIdentity(context, file))
+
+            // Lower versionCode
+            packageManager.setPackageArchiveInfo(
+                file.absolutePath,
+                PackageInfo().apply {
+                    packageName = context.packageName
+                    signatures = arrayOf(signer)
+                    versionCode = 99
+                },
+            )
+            assertEquals(ApkIdentityResult.DOWNGRADE, AppUpdateManager.checkApkIdentity(context, file))
+            assertFalse(AppUpdateManager.verifyApkIdentity(context, file))
+
+            // Higher versionCode
+            packageManager.setPackageArchiveInfo(
+                file.absolutePath,
+                PackageInfo().apply {
+                    packageName = context.packageName
+                    signatures = arrayOf(signer)
+                    versionCode = 101
+                },
+            )
+            assertEquals(ApkIdentityResult.VALID, AppUpdateManager.checkApkIdentity(context, file))
+            assertTrue(AppUpdateManager.verifyApkIdentity(context, file))
+        } finally {
+            file.delete()
+        }
+    }
+
+    @Test
+    fun pinnedSignerMismatchRejected() {
+        val context = RuntimeEnvironment.getApplication()
+        val file = File(context.cacheDir, "signer-mismatch.apk").apply { writeText("APK fixture") }
+        val mockSigner = Signature(byteArrayOf(9, 9, 9))
+        // Do not override trustedFingerprintsOverride; use default OFFICIAL_SIGNER_SHA256
+        AppUpdateManager.trustedFingerprintsOverride = null
+        val packageManager = shadowOf(context.packageManager)
+        packageManager.getInternalMutablePackageInfo(context.packageName).apply {
+            signatures = arrayOf(mockSigner)
+            versionCode = 1
+        }
+        packageManager.setPackageArchiveInfo(
+            file.absolutePath,
+            PackageInfo().apply {
+                packageName = context.packageName
+                signatures = arrayOf(mockSigner)
+                versionCode = 2
+            },
+        )
+        try {
+            assertEquals(ApkIdentityResult.SIGNER_MISMATCH, AppUpdateManager.checkApkIdentity(context, file))
+            assertFalse(AppUpdateManager.verifyApkIdentity(context, file))
+        } finally {
+            file.delete()
+        }
+    }
+
+    @Test
+    fun correctSignerAccepted() {
+        val context = RuntimeEnvironment.getApplication()
+        val file = File(context.cacheDir, "signer-correct.apk").apply { writeText("APK fixture") }
+        val officialSignerBytes = byteArrayOf(4, 5, 6)
+        val officialFingerprint = AppUpdateManager.sha256(officialSignerBytes)
+        AppUpdateManager.trustedFingerprintsOverride = setOf(officialFingerprint)
+        val officialSigner = Signature(officialSignerBytes)
+        val packageManager = shadowOf(context.packageManager)
+        packageManager.getInternalMutablePackageInfo(context.packageName).apply {
+            signatures = arrayOf(officialSigner)
+            versionCode = 156
+        }
+        packageManager.setPackageArchiveInfo(
+            file.absolutePath,
+            PackageInfo().apply {
+                packageName = context.packageName
+                signatures = arrayOf(officialSigner)
+                versionCode = 157
+            },
+        )
+        try {
+            assertEquals(ApkIdentityResult.VALID, AppUpdateManager.checkApkIdentity(context, file))
+            assertTrue(AppUpdateManager.verifyApkIdentity(context, file))
+        } finally {
+            file.delete()
+        }
+    }
+
     @Suppress("DEPRECATION")
     private suspend fun stageVerifiedPackage(context: Context): AppUpdateState.Downloaded {
         val file = File(context.cacheDir, "verified-update.apk").apply { writeText("APK fixture") }
         val signer = Signature(byteArrayOf(1, 2, 3))
+        AppUpdateManager.trustedFingerprintsOverride = setOf(AppUpdateManager.sha256(signer.toByteArray()))
         val packageManager = shadowOf(context.packageManager)
-        packageManager.getInternalMutablePackageInfo(context.packageName).signatures = arrayOf(signer)
+        packageManager.getInternalMutablePackageInfo(context.packageName).apply {
+            signatures = arrayOf(signer)
+            versionCode = 1
+        }
         packageManager.setPackageArchiveInfo(
             file.absolutePath,
             PackageInfo().apply {
                 packageName = context.packageName
                 signatures = arrayOf(signer)
+                versionCode = 2
             },
         )
         val downloaded = AppUpdateState.Downloaded(GitHubRelease("test", htmlUrl = ""), file)

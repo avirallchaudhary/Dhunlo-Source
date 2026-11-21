@@ -15,12 +15,19 @@ In compliance with Section 5(a) of the GNU General Public License v3.0, the modi
 * **Modifications Copyright:** Copyright &copy; 2026 DHUNLO contributors (Avik Chaudhary / `avirallchaudhary`).
 * **Relevant Dates:** November 2026.
 * **Scope of Modifications:**
-  * Independent DHUNLO brand identity, application labels, and custom adaptive vector/bitmap icons.
-  * System UI & notification lock-screen liquid glass enhancements with real-time blur and dynamic scrims.
-  * System volume panel branding integration.
-  * Light and dark theme accessible contrast tuning across collection tiles and headers.
-  * Independent storage identity and decoupling of application preferences.
-  * Independent release update checking decoupled from upstream binaries.
+  * **v1.0.0 (November 2026):**
+    * Independent DHUNLO brand identity, application labels, and custom adaptive vector/bitmap icons.
+    * System UI & notification lock-screen liquid glass enhancements with real-time blur and dynamic scrims.
+    * System volume panel branding integration.
+    * Light and dark theme accessible contrast tuning across collection tiles and headers.
+    * Independent storage identity and decoupling of application preferences.
+    * Independent release update checking decoupled from upstream binaries.
+  * **v1.0.1 (November 2026):**
+    * Hardened GitHub release auto-updater asset resolution to strictly accept official naming formats (`DHUNLO-v<version>-release.apk` / `DHUNLO-<version>-release.apk`) while retaining backward-compatible fallback (`Dhunlo.apk`).
+    * Cryptographic certificate validation pinning against the official DHUNLO release signing certificate (`33b85da983e857e90511fffaeef596993d8ffaff1e62941cfb48412e7fd2bbaa`).
+    * Enforced release channel filtering ensuring only stable, non-prerelease, non-draft GitHub releases trigger in-app updates.
+    * Redirect and URL sanitization restricting release downloads to verified official GitHub release asset endpoints.
+    * In-place upgrade safety ensuring existing user library, database, credentials, and cache are preserved without data loss.
 * **License:** The entire DHUNLO work, including all modifications, is licensed as a whole under the GNU General Public License v3.0.
 
 ## 3. Third-Party Licenses & Bundled Components

@@ -1,0 +1,5 @@
+DHUNLO v1.0.1 (Upstream: Metrolist v14.0.1)
+Fixed GitHub release auto-updater asset resolution and redirect validation.
+Added strict APK verification against official signing certificate (SHA-256: 33b85da9...).
+Preserved user library, audio cache, and settings across in-place upgrades.
+Enforced stable-release filtering to prevent premature prerelease updates.

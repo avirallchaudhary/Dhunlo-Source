@@ -51,13 +51,28 @@ class AppUpdatePrereleaseRegressionTest {
             assertEquals("999.0.0", checkCachedRelease("v999.0.0", prerelease = false)?.version)
         }
 
+    @Test
+    fun releaseWithNoApkSkipped() =
+        runTest {
+            assertNull(checkCachedRelease("v999.0.0", prerelease = false, hasApk = false))
+        }
+
     private suspend fun checkCachedRelease(
         tag: String,
         prerelease: Boolean,
+        hasApk: Boolean = true,
     ): GitHubRelease? {
+        val version = tag.removePrefix("v")
+        val assetsJson =
+            if (hasApk) {
+                """[{"name":"DHUNLO-v$version-release.apk","state":"uploaded","size":100,""" +
+                    """"browser_download_url":"https://github.com/avirallchaudhary/Dhunlo/releases/download/$tag/DHUNLO-v$version-release.apk"}]"""
+            } else {
+                "[]"
+            }
         Settings.shared.cachedAvailableUpdateJson =
             """{"tag_name":"$tag","name":"Candidate","draft":false,"prerelease":$prerelease,""" +
-            """"html_url":"https://example.invalid/$tag","assets":[]}"""
+            """"html_url":"https://github.com/avirallchaudhary/Dhunlo/releases/tag/$tag","assets":$assetsJson}"""
         return AppUpdateManager.checkAtStartup(RuntimeEnvironment.getApplication(), networkEnabled = false)
     }
 

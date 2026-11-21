@@ -1,25 +1,38 @@
 # DHUNLO — Source Code Repository
 
-This repository contains the complete, reproducible **Corresponding Source Code** for the **DHUNLO** application, published in full compliance with the **GNU General Public License v3.0** (GPL-3.0).
+This repository contains the complete, corresponding **Source Code** for the **DHUNLO** application, published in full compliance with Section 6 of the **GNU General Public License v3.0** (GPL-3.0).
 
 ---
 
 ## Release Identification & Binary Provenance
 
 * **Application Name:** DHUNLO
-* **Release Version:** `1.0.0`
-* **Android Version Code:** `156`
+* **Current Release Version:** `1.0.1`
+* **Android Version Code:** `157`
 * **Package Identifier:** `com.metrolist.music`
-* **Target Git Tag:** `v1.0.0`
-* **Distributed Release APK:** [`DHUNLO-v1.0.0-release.apk`](https://github.com/avirallchaudhary/Dhunlo)
+* **Target Git Tag:** `v1.0.1`
+* **Distributed Release APK:** [`DHUNLO-v1.0.1-release.apk`](https://github.com/avirallchaudhary/Dhunlo) (and fallback alias `Dhunlo.apk`)
 * **Official APK SHA-256 Checksum:**
   ```text
-  234BC8A078D9D173586F34CB8ADD08F9909D5557BF2C5448BA7CC710EB650836
+  C38620E28098BB0523CD7105255C88E0AB21BD8A8A3855A28827D617869EB30F
   ```
 * **Official Signing Certificate SHA-256:**
   ```text
   33b85da983e857e90511fffaeef596993d8ffaff1e62941cfb48412e7fd2bbaa
   ```
+
+---
+
+## Release History
+
+* **DHUNLO v1.0.1** (Version Code `157`, Git Tag `v1.0.1`):
+  * Official Release APK: `DHUNLO-v1.0.1-release.apk`
+  * SHA-256: `C38620E28098BB0523CD7105255C88E0AB21BD8A8A3855A28827D617869EB30F`
+  * Changes: Hardened in-app auto-updater release resolution, certificate validation, redirect sanitization, and release channel verification.
+* **DHUNLO v1.0.0** (Version Code `156`, Git Tag `v1.0.0`):
+  * Official Release APK: `DHUNLO-v1.0.0-release.apk`
+  * SHA-256: `234BC8A078D9D173586F34CB8ADD08F9909D5557BF2C5448BA7CC710EB650836`
+  * Initial public release with DHUNLO branding, Liquid Glass UI, decoupled storage identity, and standalone release distribution.
 
 ---
 

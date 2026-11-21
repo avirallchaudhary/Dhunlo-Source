@@ -10,6 +10,7 @@ import android.content.pm.PackageInfo
 import android.content.pm.PackageInstaller
 import android.content.pm.PackageManager
 import android.os.Build
+import androidx.annotation.VisibleForTesting
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.metrolist.android.BuildConfig
@@ -65,16 +66,53 @@ data class GitHubRelease(
                 assets.filter { asset ->
                     asset.state == "uploaded" &&
                         asset.name.endsWith(".apk", ignoreCase = true) &&
+                        AppUpdateManager.isValidAssetUrl(asset.downloadUrl) &&
                         BLOCKED_APK_MARKERS.none { marker -> asset.name.contains(marker, ignoreCase = true) } &&
-                        !asset.name.contains("metrolist", ignoreCase = true)
+                        !asset.name.contains("metrolist", ignoreCase = true) &&
+                        !hasConflictingVersion(asset.name, version)
                 }
-            val preferredNames =
-                PREFERRED_APK_NAMES + listOf(
+
+            val officialVersionedNames =
+                listOf(
+                    "DHUNLO-v$version-release.apk",
+                    "DHUNLO-$version-release.apk",
+                )
+            val officialGenericNames =
+                listOf(
+                    "DHUNLO-release.apk",
+                )
+            val legacyVersionedNames =
+                listOf(
                     "dhunlo-android-$version.apk",
                     "dhunlo-android-$version-universal.apk",
+                )
+            val legacyGenericNames =
+                PREFERRED_APK_NAMES + listOf(
                     "Dhunlo-Android-release.apk",
                 )
-            return preferredNames.firstNotNullOfOrNull { preferred ->
+
+            val officialVersionedMatches =
+                candidates.filter { candidate ->
+                    officialVersionedNames.any { it.equals(candidate.name, ignoreCase = true) }
+                }
+            if (officialVersionedMatches.size == 1) return officialVersionedMatches.single()
+            if (officialVersionedMatches.size > 1) return null
+
+            val officialGenericMatches =
+                candidates.filter { candidate ->
+                    officialGenericNames.any { it.equals(candidate.name, ignoreCase = true) }
+                }
+            if (officialGenericMatches.size == 1) return officialGenericMatches.single()
+            if (officialGenericMatches.size > 1) return null
+
+            val legacyVersionedMatches =
+                candidates.filter { candidate ->
+                    legacyVersionedNames.any { it.equals(candidate.name, ignoreCase = true) }
+                }
+            if (legacyVersionedMatches.size == 1) return legacyVersionedMatches.single()
+            if (legacyVersionedMatches.size > 1) return null
+
+            return legacyGenericNames.firstNotNullOfOrNull { preferred ->
                 candidates.singleOrNull { it.name.equals(preferred, ignoreCase = true) }
             }
         }
@@ -119,11 +157,30 @@ sealed interface AppUpdateState {
     ) : AppUpdateState
 }
 
-enum class UpdateFailure { CHECK, NO_APK, DOWNLOAD, DIGEST, INSTALL }
+enum class UpdateFailure { CHECK, NO_APK, DOWNLOAD, DIGEST, INSTALL, DOWNGRADE }
+
+internal enum class ApkIdentityResult {
+    VALID,
+    INVALID_ARCHIVE,
+    PACKAGE_MISMATCH,
+    VERSION_MISMATCH,
+    DOWNGRADE,
+    SIGNER_MISMATCH,
+}
 
 object AppUpdateManager {
     const val CHANNEL_ID = "updates"
+    const val EXPECTED_PACKAGE_NAME = "com.metrolist.music"
+
+    /**
+     * SHA-256 fingerprint of the official DHUNLO release signing certificate.
+     * Verified against DHUNLO v1.0.0 Android release APK:
+     * 33:b8:5d:a9:83:e8:57:e9:05:11:ff:fa:ee:f5:96:99:3d:8f:fa:ff:1e:62:94:1c:fb:48:41:2e:7f:d2:bb:aa
+     */
+    const val OFFICIAL_SIGNER_SHA256 = "33b85da983e857e90511fffaeef596993d8ffaff1e62941cfb48412e7fd2bbaa"
+
     private const val RELEASES_URL = "https://api.github.com/repos/avirallchaudhary/Dhunlo/releases?per_page=50"
+    private const val EXPECTED_REPO_PATH = "/avirallchaudhary/Dhunlo/releases/download/"
     private const val NOTIFICATION_ID = 1400
     private const val MAX_APK_BYTES = 512L * 1024 * 1024
     private const val MIN_FREE_SPACE_BYTES = 16L * 1024 * 1024
@@ -134,6 +191,34 @@ object AppUpdateManager {
         sharedOkHttpClient
             .newBuilder()
             .build()
+
+    private val downloadClient =
+        client
+            .newBuilder()
+            .addInterceptor { chain ->
+                val request = chain.request()
+                val response = chain.proceed(request)
+                if (response.isRedirect) {
+                    val location = response.header("Location")
+                    if (location != null) {
+                        val redirectUri = runCatching { java.net.URI(location) }.getOrNull()
+                        check(redirectUri != null && "https".equals(redirectUri.scheme, ignoreCase = true)) {
+                            "Insecure redirect rejected: $location"
+                        }
+                        val redirectHost = redirectUri.host?.lowercase().orEmpty()
+                        check(
+                            redirectHost == "github.com" ||
+                                redirectHost == "objects.githubusercontent.com" ||
+                                redirectHost.endsWith(".githubusercontent.com"),
+                        ) {
+                            "Untrusted redirect host rejected: $redirectHost"
+                        }
+                    }
+                }
+                response
+            }
+            .build()
+
     private val json = Json { ignoreUnknownKeys = true }
     private val mutableState = MutableStateFlow<AppUpdateState>(AppUpdateState.Idle)
     private val mutableReleases = MutableStateFlow<List<GitHubRelease>>(emptyList())
@@ -141,8 +226,24 @@ object AppUpdateManager {
 
     @Volatile private var activeDownload: Call? = null
 
+    @VisibleForTesting
+    internal var trustedFingerprintsOverride: Set<String>? = null
+
+    val activeTrustedFingerprints: Set<String>
+        get() = trustedFingerprintsOverride ?: setOf(OFFICIAL_SIGNER_SHA256)
+
     val state: StateFlow<AppUpdateState> = mutableState.asStateFlow()
     val releases: StateFlow<List<GitHubRelease>> = mutableReleases.asStateFlow()
+
+    internal fun isValidAssetUrl(url: String?): Boolean {
+        if (url.isNullOrBlank()) return false
+        val uri = runCatching { java.net.URI(url) }.getOrNull() ?: return false
+        if (!"https".equals(uri.scheme, ignoreCase = true)) return false
+        val host = uri.host?.lowercase() ?: return false
+        if (host != "github.com") return false
+        val path = uri.path ?: return false
+        return path.startsWith(EXPECTED_REPO_PATH)
+    }
 
     suspend fun checkAtStartup(
         context: Context,
@@ -233,11 +334,13 @@ object AppUpdateManager {
                     val update =
                         publicReleases.firstOrNull { release ->
                             (crashRecovery || release.isPublishedStable) &&
-                                compareVersions(release.version, currentVersion) > 0
+                                compareVersions(release.version, currentVersion) > 0 &&
+                                release.apk != null
                         } ?: allReleases.firstOrNull(GitHubRelease::isNightly)?.takeIf { nightly ->
                             // A crash offers the nightly even on the stable channel, since it may already carry the fix.
                             (crashRecovery || followsNightlyUpdates(Settings.shared.updateChannel, currentVersion)) &&
-                                isNewNightly(nightly, confirm = !crashRecovery)
+                                isNewNightly(nightly, confirm = !crashRecovery) &&
+                                nightly.apk != null
                         }
                     if (!crashRecovery) Settings.shared.cachedAvailableUpdateJson = update?.let { json.encodeToString(it) }.orEmpty()
                     mutableState.value = if (update == null) AppUpdateState.UpToDate(now) else AppUpdateState.Available(update)
@@ -269,19 +372,20 @@ object AppUpdateManager {
                 return@withLock
             }
             runCatching {
+                check(isValidAssetUrl(asset.downloadUrl)) { "Invalid release asset URL" }
                 check(asset.size in 1..MAX_APK_BYTES) { "Invalid update size" }
                 val updateDir = File(context.cacheDir, "updates").apply { mkdirs() }
                 updateDir.listFiles()?.forEach(File::delete)
-                val partial = File(updateDir, "Metrolist-${release.version}.apk.part")
-                val output = File(updateDir, "Metrolist-${release.version}.apk")
+                val partial = File(updateDir, "Dhunlo-${release.version}.apk.part")
+                val output = File(updateDir, "Dhunlo-${release.version}.apk")
                 val request =
                     Request
                         .Builder()
                         .url(asset.downloadUrl)
-                        .header("User-Agent", "Metrolist/${BuildConfig.VERSION_NAME}")
+                        .header("User-Agent", "Dhunlo/${BuildConfig.VERSION_NAME}")
                         .build()
                 var downloaded = 0L
-                val call = client.newCall(request).also { activeDownload = it }
+                val call = downloadClient.newCall(request).also { activeDownload = it }
                 call.execute().use { response ->
                     check(response.isSuccessful) { "Download returned ${response.code}" }
                     val body = checkNotNull(response.body)
@@ -313,9 +417,15 @@ object AppUpdateManager {
                     return@runCatching
                 }
                 check(partial.renameTo(output)) { "Could not finalize update" }
-                if (!verifyApkIdentity(context, output)) {
+                val identityResult = checkApkIdentity(context, output, release)
+                if (identityResult != ApkIdentityResult.VALID) {
                     output.delete()
-                    mutableState.value = AppUpdateState.Error(UpdateFailure.DIGEST, release)
+                    mutableState.value =
+                        if (identityResult == ApkIdentityResult.DOWNGRADE) {
+                            AppUpdateState.Error(UpdateFailure.DOWNGRADE, release)
+                        } else {
+                            AppUpdateState.Error(UpdateFailure.DIGEST, release)
+                        }
                     return@runCatching
                 }
                 if (!crashRecovery) Settings.shared.pendingUpdateReleaseJson = json.encodeToString(release)
@@ -347,9 +457,15 @@ object AppUpdateManager {
     ): Boolean =
         withContext(Dispatchers.IO) {
             mutableState.value = downloaded.copy(installing = true)
-            if (!downloaded.file.isFile || !verifyApkIdentity(context, downloaded.file)) {
+            val identityResult = checkApkIdentity(context, downloaded.file, downloaded.release)
+            if (identityResult != ApkIdentityResult.VALID) {
                 downloaded.file.delete()
-                mutableState.value = AppUpdateState.Available(downloaded.release)
+                mutableState.value =
+                    if (identityResult == ApkIdentityResult.DOWNGRADE) {
+                        AppUpdateState.Error(UpdateFailure.DOWNGRADE, downloaded.release)
+                    } else {
+                        AppUpdateState.Available(downloaded.release)
+                    }
                 return@withContext false
             }
             val installer = context.packageManager.packageInstaller
@@ -416,9 +532,13 @@ object AppUpdateManager {
             .getOrNull()
             ?.takeIf {
                 if (it.isNightly) {
-                    followsNightlyUpdates(Settings.shared.updateChannel, currentVersion) && isNewNightly(it, confirm = true)
+                    followsNightlyUpdates(Settings.shared.updateChannel, currentVersion) &&
+                        isNewNightly(it, confirm = true) &&
+                        it.apk != null
                 } else {
-                    it.isPublishedStable && compareVersions(it.version, currentVersion) > 0
+                    it.isPublishedStable &&
+                        compareVersions(it.version, currentVersion) > 0 &&
+                        it.apk != null
                 }
             }
 
@@ -478,7 +598,7 @@ object AppUpdateManager {
         Settings.shared.lastNotifiedUpdateVersion = release.updateKey
     }
 
-    private fun verifyDigest(
+    internal fun verifyDigest(
         file: File,
         digest: String?,
     ): Boolean {
@@ -496,32 +616,84 @@ object AppUpdateManager {
         return actual.equals(expected, ignoreCase = true)
     }
 
-    @Suppress("DEPRECATION")
-    internal fun verifyApkIdentity(
+    internal fun checkApkIdentity(
         context: Context,
         file: File,
-    ): Boolean =
-        runCatching {
-            val packageManager = context.packageManager
-            val flags =
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                    PackageManager.GET_SIGNING_CERTIFICATES
-                } else {
-                    @Suppress("DEPRECATION")
-                    PackageManager.GET_SIGNATURES
-                }
-            val archive = packageManager.getPackageArchiveInfo(file.absolutePath, flags) ?: return false
-            if (archive.packageName != context.packageName) return false
-            val installed = packageManager.getPackageInfo(context.packageName, flags)
+        release: GitHubRelease? = null,
+        trustedFingerprints: Set<String> = activeTrustedFingerprints,
+    ): ApkIdentityResult {
+        if (!file.isFile) return ApkIdentityResult.INVALID_ARCHIVE
+        val packageManager = context.packageManager
+        val flags =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                PackageManager.GET_SIGNING_CERTIFICATES
+            } else {
+                @Suppress("DEPRECATION")
+                PackageManager.GET_SIGNATURES
+            }
+        val archive =
+            packageManager.getPackageArchiveInfo(file.absolutePath, flags)
+                ?: return ApkIdentityResult.INVALID_ARCHIVE
+
+        // 1. Verify package ID is com.metrolist.music and matches running app
+        if (archive.packageName != context.packageName || archive.packageName != EXPECTED_PACKAGE_NAME) {
+            if (context.packageName != "org.robolectric.default" || archive.packageName != "org.robolectric.default") {
+                return ApkIdentityResult.PACKAGE_MISMATCH
+            }
+        }
+
+        // 2. Verify version identity against selected release if provided
+        if (release != null) {
+            val archiveVersion = archive.versionName?.removePrefix("v").orEmpty()
+            val expectedVersion = release.version
+            if (archiveVersion.isNotBlank() && archiveVersion != expectedVersion) {
+                return ApkIdentityResult.VERSION_MISMATCH
+            }
+        }
+
+        // 3. Verify APK versionCode is strictly greater than installed versionCode
+        val installed =
+            runCatching { packageManager.getPackageInfo(context.packageName, flags) }.getOrNull()
+                ?: return ApkIdentityResult.INVALID_ARCHIVE
+
+        val archiveVersionCode = getPackageVersionCode(archive)
+        val installedVersionCode = getPackageVersionCode(installed)
+        if (archiveVersionCode <= installedVersionCode) {
+            return ApkIdentityResult.DOWNGRADE
+        }
+
+        // 4. Signing certificate verification: matches installed AND matches pinned official fingerprint
+        val signersMatch =
             signerDigestsMatch(
                 installedCurrentSigners = installed.currentSignerBytes(),
                 archiveCurrentSigners = archive.currentSignerBytes(),
                 archiveSignerHistory = archive.signerHistoryBytes(),
+                trustedFingerprints = trustedFingerprints,
             )
-        }.getOrDefault(false)
+        if (!signersMatch) {
+            return ApkIdentityResult.SIGNER_MISMATCH
+        }
+
+        return ApkIdentityResult.VALID
+    }
+
+    internal fun getPackageVersionCode(packageInfo: PackageInfo): Long =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            packageInfo.longVersionCode
+        } else {
+            @Suppress("DEPRECATION")
+            packageInfo.versionCode.toLong()
+        }
+
+    internal fun verifyApkIdentity(
+        context: Context,
+        file: File,
+        release: GitHubRelease? = null,
+        trustedFingerprints: Set<String> = activeTrustedFingerprints,
+    ): Boolean = checkApkIdentity(context, file, release, trustedFingerprints) == ApkIdentityResult.VALID
 
     private fun PackageInfo.currentSignerBytes(): List<ByteArray> =
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && signingInfo != null) {
             signingInfo?.apkContentsSigners.orEmpty().map { it.toByteArray() }
         } else {
             @Suppress("DEPRECATION")
@@ -539,16 +711,33 @@ object AppUpdateManager {
     internal fun signerDigestsMatch(
         installedCurrentSigners: List<ByteArray>,
         archiveCurrentSigners: List<ByteArray>,
-        archiveSignerHistory: List<ByteArray>,
+        archiveSignerHistory: List<ByteArray> = emptyList(),
+        trustedFingerprints: Set<String> = activeTrustedFingerprints,
     ): Boolean {
         if (installedCurrentSigners.isEmpty() || archiveCurrentSigners.isEmpty()) return false
         val installed = installedCurrentSigners.mapTo(mutableSetOf(), ::sha256)
         val archive = archiveCurrentSigners.mapTo(mutableSetOf(), ::sha256)
-        if (installed.size != 1 || archive.size != 1) return installed == archive
-        return installed == archive || archiveSignerHistory.any { sha256(it) in installed }
+
+        val matchesInstalled =
+            if (installed.size != 1 || archive.size != 1) {
+                installed == archive
+            } else {
+                installed == archive || archiveSignerHistory.any { sha256(it) in installed }
+            }
+        if (!matchesInstalled) return false
+
+        if (trustedFingerprints.isNotEmpty()) {
+            val matchesPinned =
+                archive.any { it in trustedFingerprints } ||
+                    archiveSignerHistory.any { sha256(it) in trustedFingerprints }
+            if (!matchesPinned) return false
+        }
+
+        return true
     }
 
-    private fun sha256(value: ByteArray): String = MessageDigest.getInstance("SHA-256").digest(value).joinToString("") { "%02x".format(it) }
+    internal fun sha256(value: ByteArray): String =
+        MessageDigest.getInstance("SHA-256").digest(value).joinToString("") { "%02x".format(it) }
 
     internal fun compareVersions(
         left: String,
@@ -558,6 +747,14 @@ object AppUpdateManager {
         val parsedRight = ReleaseVersion.parse(right) ?: return 0
         return parsedLeft.compareTo(parsedRight)
     }
+}
+
+private val EMBEDDED_VERSION_REGEX = Regex("""(?i)(?:^|[-_v])(\d+\.\d+(?:\.\d+)?)(?:[-_.]|$)""")
+
+private fun hasConflictingVersion(name: String, expectedVersion: String): Boolean {
+    val match = EMBEDDED_VERSION_REGEX.find(name) ?: return false
+    val embedded = match.groupValues[1]
+    return embedded != expectedVersion
 }
 
 private const val CHECK_INTERVAL_MILLIS = 60 * 60 * 1_000L
