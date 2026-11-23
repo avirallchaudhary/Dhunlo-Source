@@ -403,7 +403,7 @@ class ExoPlaybackPlayer(
     private var preferredAudioDevice: AudioDeviceInfo? = null
     private var offloadFailed = false
     private val offloadSleepStallTracker = OffloadSleepStallTracker()
-    private val progressWatchdog = PlaybackProgressWatchdog()
+    private val progressWatchdog = PlaybackProgressWatchdog(timeoutMs = 20_000L)
     private var audioOutputEnabled = true
     private var outputRecoveryState = AudioOutputRecoveryState()
     private val a2dpMonitor = BluetoothA2dpMonitor(this.context) { maybeRecoverAudioOutput(a2dpStateChanged = true) }
@@ -1088,13 +1088,27 @@ class ExoPlaybackPlayer(
         onPlaybackCommand()
         cancelScreenOffFocusRecovery()
         logCommand("resume")
-        if (currentResource == null && retryPendingQueuePlayback()) return
+        val error = exo.playerError
+        if (error != null) {
+            val failureCategory = error.media3PlaybackFailureCategory()
+            if (failureCategory in setOf(PlaybackFailureCategory.UNAVAILABLE, PlaybackFailureCategory.RATE_LIMIT)) {
+                // Permanent error: do not endlessly retry or loop
+                return
+            }
+            // Recoverable error: retry pending queue playback with current position and resumePlayback intent
+            val retryPosition = getRealtimePositionMs().coerceAtLeast(0L)
+            if (retryPendingQueuePlayback(positionMs = retryPosition, resumePlayback = true)) {
+                _loadError.value = null
+                return
+            }
+        } else if (currentResource == null && retryPendingQueuePlayback()) {
+            return
+        }
         if (currentSong.value?.isLive == true) {
             recordSeek(exo, 0L, PlaybackSeekSource("queue_restore", mapOf("reason" to "resume_ended")))
             exo.seekToDefaultPosition()
         }
         exo.play()
-        exo.playerError?.let(::reportPlaybackFailure)
         syncNextPlayback()
         maybeRecoverAudioOutput(userAction = AudioOutputUserAction.RESUME)
     }
@@ -1421,7 +1435,7 @@ class ExoPlaybackPlayer(
         advanceWithPreloadedNext(
             ready =
                 resumePlayback && wantsPlayback && !nextStarted &&
-                    (nextPlaylistIndex != C.INDEX_UNSET || nextPlayer?.playbackState == Player.STATE_READY),
+                    (nextPlaylistIndex != C.INDEX_UNSET || nextPlayer?.playbackState in setOf(Player.STATE_READY, Player.STATE_BUFFERING)),
             consume = { consumePreloadedNext?.invoke() == true },
             advance = { request(queue.next(), resumePlayback = resumePlayback) },
         )
@@ -1557,24 +1571,38 @@ class ExoPlaybackPlayer(
         val interruptedInstance = currentInstance
         val interruptedRequest = requestCounter
         val recovery =
-            Runnable {
-                pendingFocusRecovery = null
-                if (exo !== interruptedPlayer || currentInstance != interruptedInstance ||
-                    requestCounter != interruptedRequest
-                ) {
-                    return@Runnable
-                }
-                if (interruptedPlayer.playWhenReady) return@Runnable
-                val audioManager = context.getSystemService(AudioManager::class.java)
-                if (shouldRecoverPlaybackAfterScreenOffFocusLoss(
-                        powerManager.isInteractive,
-                        audioManager.mode,
-                        isCasting(),
-                        audioManager.isMusicActive,
-                    )
-                ) {
-                    recordPlaybackState("Android screen-off audio focus recovery requested.")
-                    interruptedPlayer.play()
+            object : Runnable {
+                var retried = false
+                override fun run() {
+                    if (exo !== interruptedPlayer || currentInstance != interruptedInstance ||
+                        requestCounter != interruptedRequest
+                    ) {
+                        pendingFocusRecovery = null
+                        return
+                    }
+                    if (interruptedPlayer.playWhenReady) {
+                        pendingFocusRecovery = null
+                        return
+                    }
+                    val audioManager = context.getSystemService(AudioManager::class.java)
+                    val isMusicActive = audioManager.isMusicActive
+                    if (!powerManager.isInteractive && isMusicActive && !retried) {
+                        // Dhunlo's own audio buffer may still be draining; give it one more window before deciding
+                        retried = true
+                        focusRecoveryHandler.postDelayed(this, 600L)
+                        return
+                    }
+                    pendingFocusRecovery = null
+                    if (shouldRecoverPlaybackAfterScreenOffFocusLoss(
+                            powerManager.isInteractive,
+                            audioManager.mode,
+                            isCasting(),
+                            isMusicActive,
+                        )
+                    ) {
+                        recordPlaybackState("Android screen-off audio focus recovery requested.")
+                        interruptedPlayer.play()
+                    }
                 }
             }
         pendingFocusRecovery = recovery

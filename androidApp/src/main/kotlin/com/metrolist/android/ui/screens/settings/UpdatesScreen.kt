@@ -131,7 +131,9 @@ import com.metrolist.shared.ui.icons.MetrolistIcons
 import com.metrolist.shared.ui.settings.LocalSettingsPageHasTopBar
 import com.metrolist.shared.ui.settings.settingsPageSubtitle
 import com.metrolist.shared.ui.update.GitHubMarkdown
+import com.metrolist.shared.ui.update.ReleaseNotesList
 import com.metrolist.shared.ui.update.UpdateInfo
+import com.metrolist.shared.ui.update.UserFacingReleaseNotes
 import com.metrolist.shared.ui.utils.rememberFileSizeFormatter
 import com.metrolist.shared.update.UPDATE_CHANNEL_NIGHTLY
 import com.metrolist.shared.update.UPDATE_CHANNEL_STABLE
@@ -664,7 +666,10 @@ fun UpdateDetailsScreen(
                     stringResource(if (crashRecovery) Res.string.crash_updates_changelog else Res.string.updates_changelog),
                     style = MaterialTheme.typography.headlineLarge,
                 )
-                GitHubMarkdown(release.body.orEmpty())
+                val notes = remember(release.version, release.body) {
+                    UserFacingReleaseNotes.getNotes(release.version, release.body)
+                }
+                ReleaseNotesList(notes)
             }
         }
     }

@@ -71,6 +71,7 @@ import com.metrolist.shared.youtube.playback.PlaybackNetworkStateStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -260,7 +261,8 @@ class App :
             IconUtils.syncWithPreference(this@App)
         }
 
-        get<CoroutineScope>().launch {
+        get<CoroutineScope>().launch(Dispatchers.IO) {
+            delay(4000L)
             BlockedContent.refreshAiSlopBlocklist()
         }
 
@@ -344,11 +346,14 @@ class App :
         val state =
             if (enabled) PackageManager.COMPONENT_ENABLED_STATE_ENABLED else PackageManager.COMPONENT_ENABLED_STATE_DISABLED
         listOf(MusicService::class.java, DownloadService::class.java).forEach { service ->
-            packageManager.setComponentEnabledSetting(
-                ComponentName(this, service),
-                state,
-                PackageManager.DONT_KILL_APP,
-            )
+            val component = ComponentName(this, service)
+            if (packageManager.getComponentEnabledSetting(component) != state) {
+                packageManager.setComponentEnabledSetting(
+                    component,
+                    state,
+                    PackageManager.DONT_KILL_APP,
+                )
+            }
         }
     }
 
@@ -361,6 +366,7 @@ class App :
 
     private fun startDatabaseDependentServices() {
         get<CoroutineScope>().launch(Dispatchers.IO) {
+            delay(1500L)
             SongLikeState.recoverDatabaseLikes(get<MusicDatabase>())
         }
         get<CoroutineScope>().launch {
@@ -387,7 +393,8 @@ class App :
                     if (connected) get<AudioCacheManager>().repairDownloadedArtwork()
                 }
         }
-        get<CoroutineScope>().launch {
+        get<CoroutineScope>().launch(Dispatchers.IO) {
+            delay(3000L)
             val settings = Settings.shared
             val location = Json.encodeToString(listOf(settings.audioCacheLocation, settings.downloadLocation, settings.customDownloadPath))
             val now = System.currentTimeMillis()

@@ -2108,7 +2108,7 @@
     <string name="canvas">Canvas</string>
     <string name="library_grid_columns">Colonne della griglia della raccolta</string>
     <string name="canvas_cache">Cache canvas</string>
-    <string name="equalizer_usage_warning">Il team di Dhunlo non si assume alcuna responsabilità per l’uso di MetroEQ.</string>
+    <string name="equalizer_usage_warning">Il team di Dhunlo non si assume alcuna responsabilità per l’uso di DHUNLO EQ.</string>
     <string name="metroeq_profiles">Profili salvati</string>
     <string name="metroeq_preset_treble">Alti potenziati</string>
     <string name="metroeq_save_as">Salva con nome</string>
@@ -2121,7 +2121,7 @@
     <string name="metroeq_custom_profile">Profilo personalizzato</string>
     <string name="metroeq_peak_reduction">Protezione picchi: %1$s dB</string>
     <string name="metroeq_preset_vocal">Voce</string>
-    <string name="metroeq">MetroEQ</string>
+    <string name="metroeq">DHUNLO EQ</string>
     <string name="metroeq_preset_rock">Rock</string>
     <string name="equalizer_create_custom">Crea equalizzatore personalizzato</string>
     <string name="metroeq_preset_bass">Bassi potenziati</string>
@@ -2386,7 +2386,7 @@
     <string name="sleep_timer_advanced_options">Opzioni avanzate</string>
     <string name="sleep_timer_finish_current_song">Ferma il timer alla fine del brano quando il tempo scade</string>
     <string name="sleep_timer_set_default">Imposta come predefinito</string>
-    <string name="edit_in_metroeq">Modifica in MetroEQ</string>
+    <string name="edit_in_metroeq">Modifica in DHUNLO EQ</string>
     <string name="album_order_original">Ordine album</string>
     <string name="android_auto_quick_add_playlist">Aggiunta rapida playlist</string>
     <string name="android_auto_quick_add_playlist_not_set">Scegli una playlist con aggiunta rapida dalle impostazioni di Android Auto.</string>

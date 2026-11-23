@@ -2276,7 +2276,7 @@
     <string name="player_type_expressive">Expressiu</string>
     <string name="player_type_classic">Clàssic</string>
     <string name="slider_standard">Estàndard</string>
-    <string name="edit_in_metroeq">Edita a MetroEQ</string>
+    <string name="edit_in_metroeq">Edita a DHUNLO EQ</string>
     <string name="updates_share_app">Comparteix l’aplicació</string>
     <string name="updates_share_apk">Comparteix l’APK de l’aplicació</string>
     <string name="updates_share_apk_error">No s’ha pogut preparar l’APK de l’aplicació per compartir-lo.</string>
@@ -2328,7 +2328,7 @@
     <string name="playback_event_log_raw_description">Diagnòstics de reproducció sempre actius. Copia o exporta aquest registre en brut quan falli la reproducció.</string>
     <string name="playback_event_log_raw_empty">Encara no s’ha registrat cap esdeveniment de reproducció. Reprodueix una pista per recopilar informació de diagnòstic.</string>
     <string name="audio_boost">Preamplificació</string>
-    <string name="equalizer_usage_warning">L’equip de Dhunlo no es fa responsable de l’ús que facis de MetroEQ.</string>
+    <string name="equalizer_usage_warning">L’equip de Dhunlo no es fa responsable de l’ús que facis de DHUNLO EQ.</string>
     <string name="playlist_cover_updated">S’ha actualitzat la portada de la llista de reproducció</string>
     <string name="playlist_cover_removed">S’ha eliminat la portada personalitzada</string>
     <string name="login">Inicia la sessió</string>
@@ -2397,7 +2397,7 @@
     <string name="metroeq_custom_profile">Perfil personalitzat</string>
     <string name="metroeq_peak_reduction">Protecció contra pics: %1$s dB</string>
     <string name="metroeq_preset_vocal">Veus</string>
-    <string name="metroeq">MetroEQ</string>
+    <string name="metroeq">DHUNLO EQ</string>
     <string name="metroeq_preset_rock">Rock</string>
     <string name="metroeq_save_as">Desa com a</string>
     <string name="metroeq_preset_bass">Reforç dels greus</string>

@@ -1,0 +1,7 @@
+DHUNLO v1.0.2
+- Fixed unexpected playback interruptions.
+- Improved recovery after temporary network disconnections.
+- Improved next-track transition and preloading.
+- Improved audio-to-video mode transition.
+- Fixed video-mode screen timeout behaviour.
+- Improved release UI responsiveness and artwork loading.

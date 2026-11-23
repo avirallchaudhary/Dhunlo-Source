@@ -984,7 +984,7 @@
     <string name="eq_disabled">Đã tắt</string>
     <string name="no_profiles">Không có cấu hình bộ chỉnh âm</string>
     <string name="import_profile">Nhập cấu hình</string>
-    <string name="edit_in_metroeq">Chỉnh sửa trong MetroEQ</string>
+    <string name="edit_in_metroeq">Chỉnh sửa trong DHUNLO EQ</string>
     <string name="system_equalizer">Bộ chỉnh âm hệ thống</string>
     <string name="eq_wizard">Trình hướng dẫn AutoEQ</string>
     <string name="import_from_file">Nhập từ tệp</string>
@@ -2294,7 +2294,7 @@
     <string name="playback_event_log_raw_description">Chẩn đoán phát nhạc luôn bật. Hãy sao chép hoặc xuất nhật ký thô này khi việc phát nhạc gặp sự cố.</string>
     <string name="playback_event_log_raw_empty">Chưa ghi nhận sự kiện phát nào. Hãy phát một bài để thu thập chẩn đoán.</string>
     <string name="audio_boost">Bộ tiền khuếch đại</string>
-    <string name="equalizer_usage_warning">Nhóm Dhunlo không chịu trách nhiệm về việc bạn sử dụng MetroEQ.</string>
+    <string name="equalizer_usage_warning">Nhóm Dhunlo không chịu trách nhiệm về việc bạn sử dụng DHUNLO EQ.</string>
     <string name="playlist_cover_updated">Đã cập nhật ảnh bìa danh sách phát</string>
     <string name="playlist_cover_removed">Đã xóa ảnh bìa tùy chỉnh</string>
     <string name="login">Đăng nhập</string>
@@ -2363,7 +2363,7 @@
     <string name="metroeq_custom_profile">Cấu hình tùy chỉnh</string>
     <string name="metroeq_peak_reduction">Bảo vệ đỉnh: %1$s dB</string>
     <string name="metroeq_preset_vocal">Giọng hát</string>
-    <string name="metroeq">MetroEQ</string>
+    <string name="metroeq">DHUNLO EQ</string>
     <string name="metroeq_preset_rock">Rock</string>
     <string name="metroeq_save_as">Lưu thành</string>
     <string name="metroeq_preset_bass">Tăng âm trầm</string>

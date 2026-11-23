@@ -1,3 +1,21 @@
+---v1.0.2
+# DHUNLO 1.0.2
+
+- Fixed unexpected playback interruptions.
+- Improved recovery after temporary network disconnections.
+- Improved next-track transition and preloading.
+- Improved audio-to-video mode transition.
+- Fixed video-mode screen timeout behaviour.
+- Improved release UI responsiveness and artwork loading.
+
+---v1.0.1
+# DHUNLO 1.0.1
+
+- **More Reliable Updates** — Improved update detection and download reliability.
+- **Enhanced Update Security** — Added stronger verification before installing updates.
+- **Safer Releases** — Improved protection against unintended experimental updates.
+- **Seamless Upgrades** — Improved in-place updates while preserving music data, preferences and offline queues.
+
 ---v1.0.0
 # DHUNLO 1.0.0
 Initial release of DHUNLO (Upstream codebase base: Metrolist v14.0.1).

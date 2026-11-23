@@ -112,12 +112,12 @@
 <string name="metroeq_custom_profile">Custom profile</string>
 <string name="metroeq_peak_reduction">Peak protection: %1$s dB</string>
 <string name="metroeq_preset_vocal">Vocals</string>
-<string name="metroeq">MetroEQ</string>
+<string name="metroeq">DHUNLO EQ</string>
 <string name="metroeq_preset_rock">Rock</string>
 <string name="equalizer_create_custom">Create custom EQ</string>
 <string name="metroeq_preset_bass">Bass boost</string>
 <string name="metroeq_presets">Presets</string>
-<string name="equalizer_usage_warning">The Dhunlo team assumes no responsibility for your use of MetroEQ.</string>
+<string name="equalizer_usage_warning">The Dhunlo team assumes no responsibility for your use of DHUNLO EQ.</string>
 <string name="library_grid_columns">Library grid columns</string>
     <string name="verified_artists">Verified artists</string>
     <string name="onboarding_welcome_privacy_description">Set up your privacy preferences before your first listen.</string>

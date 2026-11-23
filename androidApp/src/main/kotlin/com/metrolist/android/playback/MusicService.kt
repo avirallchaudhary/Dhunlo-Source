@@ -1031,8 +1031,13 @@ class MusicService :
         }
 
         serviceScope.launch {
+            var wasConnected: Boolean? = null
             PlaybackNetworkStateStore.state.collect { network ->
-                if (network.connected) player.invalidateActiveStreamForNetworkChange()
+                val previouslyConnected = wasConnected
+                wasConnected = network.connected
+                if (previouslyConnected == false && network.connected) {
+                    player.invalidateActiveStreamForNetworkChange()
+                }
             }
         }
 
@@ -1331,7 +1336,7 @@ class MusicService :
             error = failure.cause,
         )
         while (
-            !(failure.isMediaSourceFailure && failureCategory == PlaybackFailureCategory.NETWORK) &&
+            !(failure.isMediaSourceFailure && failureCategory == PlaybackFailureCategory.NETWORK && !PlaybackNetworkStateStore.current.connected) &&
             budget.canStart(SystemClock.elapsedRealtime()) &&
             player.currentPlaybackInstanceId == failedPlaybackInstanceId &&
             player.latestQueuePlaybackRequestId == queueRequestId &&

@@ -858,7 +858,7 @@
     <string name="settings_playback">Playback</string>
     <!-- Translators: Supporting text beneath the player audio option in the settings. -->
     <string name="settings_player_audio_description">Audio, transitions, queue</string>
-    <!-- Translators: Heading for loudness normalization, MetroEQ and crossfade in the Player settings. -->
+    <!-- Translators: Heading for loudness normalization, DHUNLO EQ and crossfade in the Player settings. -->
     <string name="settings_sound">Sound</string>
     <!-- Translators: Supporting text beneath the track transition fade option in the settings. -->
     <string name="track_transition_fade_desc">Fade smoothly between the current and next track</string>
@@ -1631,7 +1631,7 @@
     <string name="no_profiles">No equalizer profiles</string>
     <!-- Translators: Button in the equalizer dialog that opens the profile import options. -->
     <string name="import_profile">Import profile</string>
-    <string name="edit_in_metroeq">Edit in MetroEQ</string>
+    <string name="edit_in_metroeq">Edit in DHUNLO EQ</string>
     <!-- Translators: Button in the equalizer dialog that opens Android's built-in equalizer. -->
     <string name="system_equalizer">System equalizer</string>
     <!-- Translators: Import option that searches the AutoEQ headphone database. AutoEQ is a project name. -->
@@ -5085,7 +5085,7 @@
     <string name="import_error_playlist_tracks_unavailable">Could not load the playlist's tracks from %1$s. Export the playlist and paste the track list.</string>
     <string name="import_error_album_tracks_unavailable">Could not load the album's tracks from %1$s. Export the album and paste the track list.</string>
 <string name="audio_boost">Preamp</string>
-<string name="equalizer_usage_warning">The Dhunlo team assumes no responsibility for your use of MetroEQ.</string>
+<string name="equalizer_usage_warning">The Dhunlo team assumes no responsibility for your use of DHUNLO EQ.</string>
 <string name="playlist_cover_updated">Playlist cover updated</string>
 <string name="playlist_cover_removed">Custom cover removed</string>
 <string name="login">Login</string>
@@ -5156,7 +5156,7 @@
 <string name="metroeq_custom_profile">Custom profile</string>
 <string name="metroeq_peak_reduction">Peak protection: %1$s dB</string>
 <string name="metroeq_preset_vocal">Vocals</string>
-<string name="metroeq">MetroEQ</string>
+<string name="metroeq">DHUNLO EQ</string>
 <string name="metroeq_preset_rock">Rock</string>
 <string name="metroeq_save_as">Save as</string>
 <string name="metroeq_preset_bass">Bass boost</string>

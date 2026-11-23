@@ -86,8 +86,11 @@ internal fun MobilePlaylistActions(
         }
     val songIds = workflow.songs.mapTo(mutableSetOf()) { it.id }
     var playtimes by remember(editablePlaylists) { mutableStateOf(emptyMap<String, Long?>()) }
+    var previews by remember(editablePlaylists) { mutableStateOf(emptyMap<String, List<String>>()) }
     LaunchedEffect(database, editablePlaylists) {
-        playtimes = database.dao().playlistLibraryStats(editablePlaylists.map { it.id }).associate { it.playlistId to it.playtime }
+        val ids = editablePlaylists.map { it.id }
+        playtimes = database.dao().playlistLibraryStats(ids).associate { it.playlistId to it.playtime }
+        previews = database.dao().playlistPreviewThumbnails(ids).groupBy({ it.playlistId }, { it.thumbnailUrl })
     }
     var membership by remember(songIds, editablePlaylists) { mutableStateOf(emptySet<String>()) }
     LaunchedEffect(database, songIds, editablePlaylists) {
@@ -150,6 +153,7 @@ internal fun MobilePlaylistActions(
                 busy = workflow.busy,
                 failed = workflow.failed,
                 sheet = true,
+                previews = previews,
                 modifier = Modifier.fillMaxHeight(),
             )
         }

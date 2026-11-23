@@ -77,6 +77,9 @@ internal class AndroidVideoModeController(
     private var videoModeSongId: String? = null
     private var videoModePositionMap: CounterpartPositionMap? = null
     private var videoModeOriginalAudioSong: SongItem? = null
+    private var cachedVideoCounterpartSourceId: String? = null
+    private var cachedVideoCounterpartSong: SongItem? = null
+    private var cachedVideoCounterpartPositionMap: CounterpartPositionMap? = null
 
     init {
         scope.launch { runSabrAutoQuality() }
@@ -183,6 +186,9 @@ internal class AndroidVideoModeController(
         if (songId != videoModeSongId) {
             videoModeOriginalAudioSong = null
             videoModePositionMap = null
+            cachedVideoCounterpartSourceId = null
+            cachedVideoCounterpartSong = null
+            cachedVideoCounterpartPositionMap = null
         }
         videoModeSongId = songId
     }
@@ -319,19 +325,31 @@ internal class AndroidVideoModeController(
                     var positionMap: CounterpartPositionMap? = null
                     val originalAudio = originalAudioForVideo(sourceSong.id, videoModeSongId, videoModeOriginalAudioSong)
                     if (wantVideo && !sourceSong.isVideoSong && !isPodcastEpisode) {
-                        when (val result = musicVideoResolver.resolveMusicVideo(sourceSong)) {
-                            is MusicVideoResult.Found -> {
-                                Timber.tag(MUSIC_VIDEO_TAG).d(
-                                    "counterpart video found generation=%d sourceVideoId=%s targetVideoId=%s mappedPosition=%s",
-                                    generation,
-                                    sourceSong.id,
-                                    result.videoId,
-                                    result.positionMap != null,
-                                )
-                                playbackSong = GlobalYouTubeRepository.instance.getSongMetadata(result.videoId)
-                                    ?: throw IOException(getString(Res.string.music_video_unavailable))
-                                positionMap = result.positionMap
-                            }
+                        if (cachedVideoCounterpartSourceId == sourceSong.id && cachedVideoCounterpartSong != null) {
+                            playbackSong = cachedVideoCounterpartSong!!
+                            positionMap = cachedVideoCounterpartPositionMap
+                        } else {
+                            when (val result = musicVideoResolver.resolveMusicVideo(sourceSong)) {
+                                is MusicVideoResult.Found -> {
+                                    Timber.tag(MUSIC_VIDEO_TAG).d(
+                                        "counterpart video found generation=%d sourceVideoId=%s targetVideoId=%s mappedPosition=%s",
+                                        generation,
+                                        sourceSong.id,
+                                        result.videoId,
+                                        result.positionMap != null,
+                                    )
+                                    playbackSong =
+                                        if (result.videoId == sourceSong.id) {
+                                            sourceSong
+                                        } else {
+                                            GlobalYouTubeRepository.instance.getSongMetadata(result.videoId)
+                                                ?: throw IOException(getString(Res.string.music_video_unavailable))
+                                        }
+                                    positionMap = result.positionMap
+                                    cachedVideoCounterpartSourceId = sourceSong.id
+                                    cachedVideoCounterpartSong = playbackSong
+                                    cachedVideoCounterpartPositionMap = positionMap
+                                }
 
                             MusicVideoResult.NotFound -> {
                                 Timber.tag(MUSIC_VIDEO_TAG).w(
@@ -357,6 +375,7 @@ internal class AndroidVideoModeController(
                                 return@launch
                             }
                         }
+                    }
                     } else if (!wantVideo && originalAudio != null) {
                         playbackSong = originalAudio
                         positionMap = videoModePositionMap?.reversed()
@@ -596,6 +615,9 @@ internal class AndroidVideoModeController(
         videoModeSongId = null
         videoModePositionMap = null
         videoModeOriginalAudioSong = null
+        cachedVideoCounterpartSourceId = null
+        cachedVideoCounterpartSong = null
+        cachedVideoCounterpartPositionMap = null
         _isVideoModeActive.value = false
         _isVideoModeResolving.value = false
         if (resetViewerPreference) {

@@ -2102,7 +2102,7 @@
     <string name="eq_disabled">Devre dışı</string>
     <string name="no_profiles">Ekolayzer profili yok</string>
     <string name="import_profile">Profili aktar</string>
-    <string name="edit_in_metroeq">MetroEQ'da Düzenle</string>
+    <string name="edit_in_metroeq">DHUNLO EQ'da Düzenle</string>
     <string name="system_equalizer">Sistem ekolayzeri</string>
     <string name="eq_wizard">AutoEQ sihirbazı</string>
     <string name="import_from_file">Dosyadan aktar</string>
@@ -2298,7 +2298,7 @@
     <string name="playback_event_log_raw_description">Her zaman açık oynatma tanılamaları. Oynatma bozulduğunda bu ham günlüğü kopyalayın veya dışa aktarın.</string>
     <string name="playback_event_log_raw_empty">Henüz kaydedilmiş oynatma olayı yok. Tanılama verilerini yakalamak için bir parça çalın.</string>
     <string name="audio_boost">Ön amfi</string>
-    <string name="equalizer_usage_warning">Dhunlo ekibi MetroEQ kullanımınız için sorumluluk kabul etmez.</string>
+    <string name="equalizer_usage_warning">Dhunlo ekibi DHUNLO EQ kullanımınız için sorumluluk kabul etmez.</string>
     <string name="playlist_cover_updated">Çalma listesi kapağı güncellendi</string>
     <string name="playlist_cover_removed">Özel kapak kaldırıldı</string>
     <string name="login">Oturum aç</string>
@@ -2367,7 +2367,7 @@
     <string name="metroeq_custom_profile">Özel profil</string>
     <string name="metroeq_peak_reduction">Tepe koruması: %1$s dB</string>
     <string name="metroeq_preset_vocal">Vokal</string>
-    <string name="metroeq">MetroEQ</string>
+    <string name="metroeq">DHUNLO EQ</string>
     <string name="metroeq_preset_rock">Rock</string>
     <string name="metroeq_save_as">Farklı kaydet</string>
     <string name="metroeq_preset_bass">Bas güçlendirme</string>

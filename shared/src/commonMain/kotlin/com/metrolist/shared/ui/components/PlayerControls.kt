@@ -4,6 +4,8 @@ package com.metrolist.shared.ui.components
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
@@ -220,14 +222,20 @@ fun PlayerPrimaryControls(
             160.dp
         }
     val sideShape = RoundedCornerShape(effectiveSideButtonHeight / 2)
-    val playShape =
+    val targetPlayCornerRadius =
         if (useRoundedRect) {
-            RoundedCornerShape(16.dp)
+            16.dp
         } else if (isCompact) {
-            if (isPlaying) RoundedCornerShape(14.dp) else RoundedCornerShape(28.dp)
+            if (isPlaying) 14.dp else 28.dp
         } else {
-            if (isPlaying) RoundedCornerShape(20.dp) else RoundedCornerShape(48.dp)
+            if (isPlaying) 20.dp else 48.dp
         }
+    val playCornerRadius by animateDpAsState(
+        targetValue = targetPlayCornerRadius,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMediumLow),
+        label = "playCornerRadius",
+    )
+    val playShape = RoundedCornerShape(playCornerRadius)
     val iconSize = if (isCompact) 20.dp else 24.dp
     val loadingText = stringResource(Res.string.loading)
     val isDark = Settings.shared.getCurrentThemeIsDark()

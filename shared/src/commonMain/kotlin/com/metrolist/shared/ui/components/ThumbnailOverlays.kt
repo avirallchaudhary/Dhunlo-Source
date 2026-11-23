@@ -30,6 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -77,8 +78,9 @@ fun animatedCurrentSongArtworkShape(
     isCurrent: Boolean,
     inactiveShape: Shape,
 ): Shape {
+    if (!isCurrent) return inactiveShape
     val progress by animateFloatAsState(
-        targetValue = if (isCurrent) 1f else 0f,
+        targetValue = 1f,
         animationSpec = if (rememberReducedMotion()) snap() else MaterialTheme.motionScheme.defaultSpatialSpec(),
         label = "currentSongArtworkShape",
     )
@@ -158,6 +160,9 @@ fun rememberCurrentSongArtworkRotation(
     isCurrent: Boolean,
     isPlaying: Boolean,
 ): State<Float> {
+    if (!isCurrent) {
+        return remember { mutableFloatStateOf(0f) }
+    }
     val motionScale = rememberCoroutineScope().coroutineContext[MotionDurationScale]?.scaleFactor ?: 1f
     return rememberArtworkShapeRotation(
         spinning = isCurrent && isPlaying,

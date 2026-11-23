@@ -2189,7 +2189,7 @@
     <string name="settings_resume_prompt_summary">Kysy ennen tallennetun jonon jatkamista sovelluksen käynnistyessä</string>
     <string name="settings_player_layout_summary">Muuta kansikuvien ja toistosäätimien asettelua</string>
     <string name="settings_filter_q_summary">Q säätää valitun suotimen leveyttä tai resonanssia</string>
-    <string name="metroeq">MetroEQ</string>
+    <string name="metroeq">DHUNLO EQ</string>
     <string name="settings_reset_to_default">Palauta oletus</string>
     <string name="remove_all_downloads">Poista kaikki lataukset</string>
     <string name="lyrics_song_artist">Kappaleen artisti</string>

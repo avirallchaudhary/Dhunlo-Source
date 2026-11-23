@@ -2112,7 +2112,7 @@
     <string name="metroeq_profile_name">Nama profil</string>
     <string name="metroeq_custom_profile">Profil kustom</string>
     <string name="metroeq_peak_reduction">Proteksi peak: %1$s dB</string>
-    <string name="metroeq">MetroEQ</string>
+    <string name="metroeq">DHUNLO EQ</string>
     <string name="metroeq_save_as">Simpan sebagai</string>
     <string name="download_error_incomplete">YouTube tidak menyediakan berkas audio secara lengkap. Coba lagi nanti atau gunakan jaringan lain.</string>
     <string name="chip_content_description">%1$s, chip</string>
@@ -2157,7 +2157,7 @@
     <string name="charts">Grafik</string>
     <string name="recap_playlists">Rekap playlist</string>
     <string name="settings_default">Default</string>
-    <string name="equalizer_usage_warning">Tim Dhunlo tidak bertanggung jawab atas penggunaan MetroEQ oleh Anda.</string>
+    <string name="equalizer_usage_warning">Tim Dhunlo tidak bertanggung jawab atas penggunaan DHUNLO EQ oleh Anda.</string>
     <string name="login">Masuk</string>
     <string name="app_version">Versi aplikasi</string>
     <string name="yeah">Yeah!</string>
@@ -2317,7 +2317,7 @@
     <string name="privacy_diagnostics">Diagnostik</string>
     <string name="foreign_import_title">Impor dari app lain</string>
     <string name="foreign_import_desc">Impor daftar suka, playlist dan riwayat mendengarkan dari InnerTune, OuterTune, ViMusic, RiMusic, Kreate, SimpMusic, atau Prism. Aplikasi akan tetap menyimpan koleksimu.</string>
-    <string name="edit_in_metroeq">Edit di MetroEQ</string>
+    <string name="edit_in_metroeq">Edit di DHUNLO EQ</string>
     <string name="ai_translation_trigger">Trigger</string>
     <string name="lyrics_romanization_detect_cyrillic_per_line_description">Berguna untuk lagu yang memadukan beberapa bahasa Cyrillic</string>
     <string name="recognition_no_match_try_clearer_section">Kecocokan tidak ditemukan. Coba bagian yang lebih keras atau lebih jelas.</string>

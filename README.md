@@ -7,14 +7,14 @@ This repository contains the complete, corresponding **Source Code** for the **D
 ## Release Identification & Binary Provenance
 
 * **Application Name:** DHUNLO
-* **Current Release Version:** `1.0.1`
-* **Android Version Code:** `157`
+* **Current Release Version:** `1.0.2`
+* **Android Version Code:** `158`
 * **Package Identifier:** `com.metrolist.music`
-* **Target Git Tag:** `v1.0.1`
-* **Distributed Release APK:** [`DHUNLO-v1.0.1-release.apk`](https://github.com/avirallchaudhary/Dhunlo) (and fallback alias `Dhunlo.apk`)
+* **Target Git Tag:** `v1.0.2`
+* **Distributed Release APK:** [`DHUNLO-v1.0.2-release.apk`](https://github.com/avirallchaudhary/Dhunlo) (and fallback alias `Dhunlo.apk`)
 * **Official APK SHA-256 Checksum:**
   ```text
-  C38620E28098BB0523CD7105255C88E0AB21BD8A8A3855A28827D617869EB30F
+  4935111D26CD8F682FD461DB85998B1BA6F8608F9B95CF02B823F4FAF9CDE977
   ```
 * **Official Signing Certificate SHA-256:**
   ```text
@@ -25,6 +25,10 @@ This repository contains the complete, corresponding **Source Code** for the **D
 
 ## Release History
 
+* **DHUNLO v1.0.2** (Version Code `158`, Git Tag `v1.0.2`):
+  * Official Release APK: `DHUNLO-v1.0.2-release.apk`
+  * SHA-256: `4935111D26CD8F682FD461DB85998B1BA6F8608F9B95CF02B823F4FAF9CDE977`
+  * Changes: Critical playback stability (delayed audio focus recovery, transient MediaSource network retry loop, fast audio-to-video mode switching, next-track preloading, and video surface screen keep-on flag), Compose recomposition and artwork performance optimizations, and official v1.0.2 release identity.
 * **DHUNLO v1.0.1** (Version Code `157`, Git Tag `v1.0.1`):
   * Official Release APK: `DHUNLO-v1.0.1-release.apk`
   * SHA-256: `C38620E28098BB0523CD7105255C88E0AB21BD8A8A3855A28827D617869EB30F`

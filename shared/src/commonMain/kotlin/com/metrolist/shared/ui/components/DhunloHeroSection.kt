@@ -185,6 +185,32 @@ private fun HeroCardContent(
     val artworkShape = if (isWide) RoundedCornerShape(20.dp) else RoundedCornerShape(16.dp)
     val artworkSize = if (isWide) 160.dp else 110.dp
 
+    val customBorderBrush =
+        remember(isDark) {
+            if (isDark) {
+                DhunloGlassTokens.brandSpecularBorderBrush(intensity = 0.85f)
+            } else {
+                DhunloGlassTokens.specularBorderBrush(intensity = 0.95f)
+            }
+        }
+
+    val ambientBackdropBrush =
+        remember(isDark) {
+            if (isDark) {
+                Brush.horizontalGradient(
+                    0.00f to Color(0xFF8A56FF).copy(alpha = 0.16f),
+                    0.45f to Color(0xFF4361EE).copy(alpha = 0.08f),
+                    1.00f to Color.Transparent,
+                )
+            } else {
+                Brush.horizontalGradient(
+                    0.00f to Color(0xFF38BDF8).copy(alpha = 0.18f),
+                    0.45f to Color(0xFF2563EB).copy(alpha = 0.08f),
+                    1.00f to Color.Transparent,
+                )
+            }
+        }
+
     Box(
         modifier =
             Modifier
@@ -201,12 +227,7 @@ private fun HeroCardContent(
                 .glassBorder(
                     shape = cardShape,
                     borderWidth = DhunloGlassTokens.BorderHairline,
-                    customBrush =
-                        if (isDark) {
-                            DhunloGlassTokens.brandSpecularBorderBrush(intensity = 0.85f)
-                        } else {
-                            DhunloGlassTokens.specularBorderBrush(intensity = 0.95f)
-                        },
+                    customBrush = customBorderBrush,
                 )
                 .clickable(
                     role = Role.Button,
@@ -218,21 +239,7 @@ private fun HeroCardContent(
             modifier =
                 Modifier
                     .fillMaxSize()
-                    .background(
-                        if (isDark) {
-                            Brush.horizontalGradient(
-                                0.00f to Color(0xFF8A56FF).copy(alpha = 0.16f),
-                                0.45f to Color(0xFF4361EE).copy(alpha = 0.08f),
-                                1.00f to Color.Transparent,
-                            )
-                        } else {
-                            Brush.horizontalGradient(
-                                0.00f to Color(0xFF38BDF8).copy(alpha = 0.18f),
-                                0.45f to Color(0xFF2563EB).copy(alpha = 0.08f),
-                                1.00f to Color.Transparent,
-                            )
-                        },
-                    ),
+                    .background(ambientBackdropBrush),
         )
 
         // Subtle bottom-to-top contrast gradient

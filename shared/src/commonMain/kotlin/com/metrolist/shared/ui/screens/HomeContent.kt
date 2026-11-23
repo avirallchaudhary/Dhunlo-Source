@@ -227,7 +227,9 @@ fun HomeContent(
     BoxWithConstraints(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
         val isWide = maxWidth > 840.dp
         val effectiveShelves =
-            shelves ?: (shelfCache ?: localShelfCache).build(uiState, text, maxWidth)
+            shelves ?: remember(uiState, text, maxWidth, shelfCache, localShelfCache) {
+                (shelfCache ?: localShelfCache).build(uiState, text, maxWidth)
+            }
         val featuredItem = remember(uiState) { selectFeaturedHomeItem(uiState) }
         val userAccountName = remember { Settings.shared.accountName.takeIf { AuthManager().isLoggedIn } }
 
@@ -501,11 +503,7 @@ fun LazyListScope.renderHomeShelves(
                 Box(
                     Modifier
                         .fillMaxWidth()
-                        .animateItem(
-                            fadeInSpec = MaterialTheme.motionScheme.defaultEffectsSpec(),
-                            placementSpec = MaterialTheme.motionScheme.defaultSpatialSpec(),
-                            fadeOutSpec = MaterialTheme.motionScheme.fastEffectsSpec(),
-                        ).padding(bottom = if (index == shelf.items.lastIndex) 16.dp else 0.dp),
+                        .padding(bottom = if (index == shelf.items.lastIndex) 16.dp else 0.dp),
                     contentAlignment = Alignment.TopCenter,
                 ) {
                     Box(Modifier.widthIn(max = 1400.dp).fillMaxWidth().padding(horizontal = if (isWide) 24.dp else 16.dp)) {

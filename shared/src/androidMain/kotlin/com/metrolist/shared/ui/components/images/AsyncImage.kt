@@ -50,7 +50,7 @@ actual fun AsyncImage(
                 .error(preview?.second?.image)
                 .size(sizeResolver)
                 .scale(decodeScale)
-                .crossfade(true)
+                .crossfade(preview == null)
                 .build()
         }
     val painter = rememberAsyncImagePainter(model = request, contentScale = contentScale)

@@ -237,6 +237,7 @@ import com.metrolist.android.ui.utils.resetHeightOffset
 import com.metrolist.android.update.AppUpdateManager
 import com.metrolist.android.update.AppUpdateState
 import com.metrolist.android.update.GitHubRelease
+import com.metrolist.shared.ui.update.UserFacingReleaseNotes
 import com.metrolist.android.utils.isAndroidAutomotive
 import com.metrolist.android.utils.isAndroidTv
 import com.metrolist.android.utils.startActivitySafely
@@ -450,6 +451,7 @@ fun MetrolistApp(
     val playbackViewModel: PlaybackViewModel = koinViewModel()
     val libraryViewModel: LibraryViewModel = koinViewModel()
     LaunchedEffect(Settings.shared.dataSyncId, Settings.shared.accountEmail, Settings.shared.innerTubeAuthUser) {
+        delay(2500L)
         libraryViewModel.refresh(force = false)
     }
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -1138,12 +1140,29 @@ fun MetrolistApp(
                         onPauseOrDispose { AndroidListenTogetherManager.setScreenVisible(false) }
                     }
 
+
+                    val isPlayerConnected by playerConnection.isConnected.collectAsState()
+                    val videoPlayer = if (isPlayerConnected) playerConnection.videoPlayer else null
+                    val playbackResource by playerConnection.currentPlaybackResource.collectAsState()
+                    val isVideoModeActive by playerConnection.isVideoModeActive.collectAsState()
+                    val isVideoViewerVisible by playerConnection.isVideoViewerVisible.collectAsState()
+                    val activity = remember(context) { context.findActivity() }
+                    val videoSize = videoPlayer?.videoSize
+                    val hasVideo =
+                        shouldShowMusicVideoSurface(
+                            isVideoModeActive = isVideoModeActive,
+                            isVideoViewerVisible = isVideoViewerVisible,
+                            hasVideo = playbackResource?.hasVideo == true,
+                        )
+
                     val isPlayerExpanded = playerBottomSheetState.isExpanded
                     var lyricsVisible by remember { mutableStateOf(false) }
                     val activeImport by PlaylistImportStatusManager.activeImport.collectAsState()
                     val hostView = LocalView.current
+                    val isVideoPlaying = !isInPipMode && isPlayerExpanded && isPlaying && hasVideo
                     val keepScreenOn =
-                        (isPlayerExpanded && Settings.shared.keepScreenOnMode.keepsAwake(isPlaying, lyricsVisible)) ||
+                        isVideoPlaying ||
+                            (isPlayerExpanded && Settings.shared.keepScreenOnMode.keepsAwake(isPlaying, lyricsVisible)) ||
                             (currentRoute in setOf(Screen.PlaylistImport, Screen.BackupRestore) && activeImport?.isRunning == true)
                     DisposableEffect(hostView, keepScreenOn) {
                         hostView.keepScreenOn = keepScreenOn
@@ -1354,19 +1373,6 @@ fun MetrolistApp(
                         }
                     }
 
-                    val isPlayerConnected by playerConnection.isConnected.collectAsState()
-                    val videoPlayer = if (isPlayerConnected) playerConnection.videoPlayer else null
-                    val playbackResource by playerConnection.currentPlaybackResource.collectAsState()
-                    val isVideoModeActive by playerConnection.isVideoModeActive.collectAsState()
-                    val isVideoViewerVisible by playerConnection.isVideoViewerVisible.collectAsState()
-                    val activity = remember(context) { context.findActivity() }
-                    val videoSize = videoPlayer?.videoSize
-                    val hasVideo =
-                        shouldShowMusicVideoSurface(
-                            isVideoModeActive = isVideoModeActive,
-                            isVideoViewerVisible = isVideoViewerVisible,
-                            hasVideo = playbackResource?.hasVideo == true,
-                        )
 
                     LaunchedEffect(isInPipMode, isPlaying, videoSize, hasVideo) {
                         if (activity != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -2209,31 +2215,8 @@ private fun AppTitleWithUpdateWarning(
 }
 
 private fun GitHubRelease.changelogSnippet(): String {
-    val lines =
-        body
-            .orEmpty()
-            .lineSequence()
-            .map(String::trim)
-            .filter(String::isNotEmpty)
-            .toList()
-    val versionHeading =
-        lines.indexOfFirst { line ->
-            line.trimStart('#', ' ').startsWith("Version $version", ignoreCase = true)
-        }
-    val firstChangesHeading =
-        lines.indexOfFirst { line ->
-            line.startsWith('#') && !line.contains("maintenance mode", ignoreCase = true)
-        }
-    val startIndex =
-        when {
-            versionHeading >= 0 -> versionHeading + 1
-            firstChangesHeading >= 0 -> firstChangesHeading
-            else -> 0
-        }
-    return lines
-        .subList(startIndex, lines.size)
-        .take(15)
-        .joinToString("\n")
+    val notes = UserFacingReleaseNotes.getNotes(version, body)
+    return notes.take(4).joinToString("\n") { "• ${it.title} — ${it.description}" }
 }
 
 val navTabMetadata: Map<String, Any> = mapOf("nav_tab" to true)

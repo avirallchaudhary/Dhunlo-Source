@@ -76,6 +76,7 @@ internal fun PlaylistChooser(
     busy: Boolean = false,
     failed: Boolean = false,
     sheet: Boolean = false,
+    previews: Map<String, List<String>> = emptyMap(),
 ) {
     val sort = Settings.shared.playlistPickerSort
     val direction = Settings.shared.playlistPickerSortDirection
@@ -99,11 +100,18 @@ internal fun PlaylistChooser(
     PlaylistChooserContent(
         playlists =
             sortedPlaylists.map { playlist ->
+                val localArtwork =
+                    previews[playlist.id]
+                        ?.takeIf {
+                            (playlist.playlist.isLocal || playlist.playlist.browseId == null || playlist.thumbnailUrl.isNullOrBlank()) &&
+                                playlist.playlist.customThumbnailUrl.isNullOrBlank()
+                        }
                 PlaylistChoice(
                     id = playlist.id,
                     title = playlist.title,
                     artwork = libraryArtwork(playlist.id, playlist.thumbnailUrl, playlist.playlist.customThumbnailUrl),
                     songCount = playlist.songCount,
+                    localArtwork = localArtwork,
                 )
             },
         membership = membership,
@@ -127,6 +135,7 @@ data class PlaylistChoice(
     val artwork: String?,
     val songCount: Int?,
     val author: String? = null,
+    val localArtwork: List<String>? = null,
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -240,13 +249,26 @@ fun PlaylistChooserContent(
                     item =
                         Material3MenuItemData(
                             icon = {
-                                PlaylistCoverImage(
-                                    url = playlist.artwork,
-                                    modifier =
-                                        Modifier
-                                            .size(40.dp)
-                                            .clip(ComponentShapes.SmallThumbnailShape),
-                                )
+                                val artworkShape = ComponentShapes.SmallThumbnailShape
+                                val localArt = playlist.localArtwork?.filter { it.isNotBlank() }
+                                if (!localArt.isNullOrEmpty()) {
+                                    LocalPlaylistArtwork(
+                                        thumbnails = localArt,
+                                        modifier =
+                                            Modifier
+                                                .size(40.dp)
+                                                .clip(artworkShape),
+                                        fallbackUrl = playlist.artwork,
+                                    )
+                                } else {
+                                    PlaylistCoverImage(
+                                        url = playlist.artwork,
+                                        modifier =
+                                            Modifier
+                                                .size(40.dp)
+                                                .clip(artworkShape),
+                                    )
+                                }
                             },
                             title = { Text(playlist.title) },
                             description = {

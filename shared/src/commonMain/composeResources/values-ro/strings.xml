@@ -2248,7 +2248,7 @@
     <string name="playback_event_log_raw_description">Diagnosticele de redare sunt mereu pornite. Copiază sau emisia acestjurnal brut atunci când redarea se defectează.</string>
     <string name="playback_event_log_raw_empty">Nociv eveniment de redare înregistrat încă. Redă o piesă pentru a captura diagnostice.</string>
     <string name="audio_boost">Preamplificare</string>
-    <string name="equalizer_usage_warning">Echipa Dhunlo nu își asumă nicio responsabilitate pentru utilizarea ta a MetroEQ.</string>
+    <string name="equalizer_usage_warning">Echipa Dhunlo nu își asumă nicio responsabilitate pentru utilizarea ta a DHUNLO EQ.</string>
     <string name="playlist_cover_updated">Coperta playlistului a fost actualizată</string>
     <string name="playlist_cover_removed">Coperta personalizată a fost eliminată</string>
     <string name="login">Autentificare</string>
@@ -2316,7 +2316,7 @@
     <string name="metroeq_profile_name">Nume profil</string>
     <string name="metroeq_custom_profile">Profil personalizat</string>
     <string name="metroeq_preset_vocal">Voci</string>
-    <string name="metroeq">MetroEQ</string>
+    <string name="metroeq">DHUNLO EQ</string>
     <string name="metroeq_preset_rock">Rock</string>
     <string name="metroeq_save_as">Salvează ca</string>
     <string name="metroeq_preset_bass">Amplificare joase</string>
@@ -2483,7 +2483,7 @@
     <string name="lyrics_plus_lighter">Plus lighter</string>
     <string name="lyrics_plus_lighter_desc">Crește luminozitatea versurilor folosind modul de amestecare Plus Lighter pe fundaluri Liquid</string>
     <string name="player_type_expressive">Expresiv</string>
-    <string name="edit_in_metroeq">Editează în MetroEQ</string>
+    <string name="edit_in_metroeq">Editează în DHUNLO EQ</string>
     <string name="updates_share_app">Distribuie aplicația</string>
     <string name="updates_share_apk">Distribuie APK-ul aplicației</string>
     <string name="updates_share_apk_error">Nu s-a putut pregăti fișierul APK al aplicației pentru distribuire.</string>

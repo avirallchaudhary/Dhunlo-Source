@@ -2184,7 +2184,7 @@
     <string name="sleep_timer_set_default">Als Standard festlegen</string>
     <string name="lyrics_plus_lighter">Aufhellend</string>
     <string name="lyrics_plus_lighter_desc">Lyrics auf flüssigen Hintergründen mit dem aufhellenden Mischmodus heller darstellen</string>
-    <string name="edit_in_metroeq">In MetroEQ bearbeiten</string>
+    <string name="edit_in_metroeq">In DHUNLO EQ bearbeiten</string>
     <string name="song_count_with_hidden">%1$s, %2$s</string>
     <plurals name="n_hidden_song">
         <item quantity="one">%1$d ausgeblendet</item>
@@ -2213,7 +2213,7 @@
     <string name="playback_event_log_raw_description">Ständige Wiedergabediagnose. Kopiere oder exportiere dieses unformatierte Protokoll, wenn die Wiedergabe nicht mehr funktioniert.</string>
     <string name="playback_event_log_raw_empty">Noch keine Wiedergabeereignisse aufgezeichnet. Spiele einen Titel, um Diagnosedaten zu erfassen.</string>
     <string name="audio_boost">Vorverstärker</string>
-    <string name="equalizer_usage_warning">Das Dhunlo-Team übernimmt keine Verantwortung für deine Nutzung von MetroEQ.</string>
+    <string name="equalizer_usage_warning">Das Dhunlo-Team übernimmt keine Verantwortung für deine Nutzung von DHUNLO EQ.</string>
     <string name="playlist_cover_updated">Playlist-Cover aktualisiert</string>
     <string name="playlist_cover_removed">Benutzerdefiniertes Cover entfernt</string>
     <string name="login">Anmelden</string>
@@ -2282,7 +2282,7 @@
     <string name="metroeq_custom_profile">Benutzerdefiniertes Profil</string>
     <string name="metroeq_peak_reduction">Spitzenpegelschutz: %1$s dB</string>
     <string name="metroeq_preset_vocal">Gesang</string>
-    <string name="metroeq">MetroEQ</string>
+    <string name="metroeq">DHUNLO EQ</string>
     <string name="metroeq_preset_rock">Rock</string>
     <string name="metroeq_save_as">Speichern als</string>
     <string name="metroeq_preset_bass">Bassverstärkung</string>

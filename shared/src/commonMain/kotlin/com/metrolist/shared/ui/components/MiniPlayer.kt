@@ -8,6 +8,7 @@
 package com.metrolist.shared.ui.components
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -387,13 +388,23 @@ fun MiniPlayer(
                             contentScale = ContentScale.Crop,
                         )
 
-                        if (isLoading && active) {
+                        androidx.compose.animation.AnimatedVisibility(
+                            visible = isLoading && active,
+                            enter = fadeIn(animationSpec = tween(150)),
+                            exit = fadeOut(animationSpec = tween(150)),
+                        ) {
                             val loadingText = stringResource(Res.string.loading)
                             LoadingIndicator(
                                 modifier = Modifier.size(24.dp).semantics { contentDescription = loadingText },
                                 color = MaterialTheme.colorScheme.primary,
                             )
-                        } else if (!isPlaying) {
+                        }
+
+                        androidx.compose.animation.AnimatedVisibility(
+                            visible = !(isLoading && active) && !isPlaying,
+                            enter = fadeIn(animationSpec = tween(150)),
+                            exit = fadeOut(animationSpec = tween(150)),
+                        ) {
                             Box(
                                 modifier =
                                     (

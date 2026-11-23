@@ -251,6 +251,7 @@ fun MusicVideoSurface(
                     .inflate(targetLayoutId, null, false)
                     .let { it as PlayerView }
                     .also {
+                        it.keepScreenOn = false
                         playerView = it
                         Timber.tag(MUSIC_VIDEO_TAG).d(
                             "PlayerView created view=%s player=%s layout=%s surfaceType=%s fill=%s isPip=%s",
@@ -264,6 +265,7 @@ fun MusicVideoSurface(
                     }
             },
             update = { view ->
+                view.keepScreenOn = false
                 if (view.resizeMode != targetResizeMode) {
                     view.resizeMode = targetResizeMode
                 }

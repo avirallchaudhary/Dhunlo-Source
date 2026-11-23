@@ -144,6 +144,11 @@ fun AddToPlaylistDialog() {
                             artwork = libraryArtwork(playlist.id, playlist.thumbnail, playlist.customThumbnail),
                             songCount = playlist.songCount?.toIntOrNull(),
                             author = playlist.author,
+                            localArtwork =
+                                playlist.artworkThumbnails.takeIf {
+                                    (playlist.isLocal || playlist.customThumbnail.isNullOrBlank()) &&
+                                        playlist.artworkThumbnails.isNotEmpty()
+                                },
                         )
                     },
                 membership = membership,

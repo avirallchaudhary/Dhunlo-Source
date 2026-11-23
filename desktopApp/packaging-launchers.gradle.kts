@@ -267,6 +267,11 @@ fun registerWindowsPortableArchive(
     appDirectory: String,
     archiveName: String,
 ) {
+    val composeAppDir = layout.buildDirectory.dir("compose/binaries/$appDirectory/app")
+    val appDir =
+        composeAppDir.map { dir ->
+            if (dir.asFile.resolve("Dhunlo").isDirectory) dir.dir("Dhunlo") else dir.dir("Metrolist")
+        }
     val manifestFile = layout.buildDirectory.file("windows-portable/$buildType/install-manifest.json")
     val manifestVersion = appVersion
     val generateManifest =
@@ -276,6 +281,8 @@ fun registerWindowsPortableArchive(
             doLast {
                 val output = manifestFile.get().asFile
                 output.parentFile.mkdirs()
+                val dir = appDir.get().asFile
+                val launcher = if (dir.resolve("Dhunlo.exe").isFile) "Dhunlo.exe" else "Metrolist.exe"
                 val manifest =
                     mapOf(
                         "schema" to 1,
@@ -283,12 +290,11 @@ fun registerWindowsPortableArchive(
                         "version" to manifestVersion,
                         "platform" to "windows",
                         "architecture" to "x86_64",
-                        "launcher" to "Metrolist.exe",
+                        "launcher" to launcher,
                     )
                 output.writeText(JsonOutput.prettyPrint(JsonOutput.toJson(manifest)) + "\n")
             }
         }
-    val appDir = layout.buildDirectory.dir("compose/binaries/$appDirectory/app/Metrolist")
     tasks.register<Zip>(taskName) {
         group = "distribution"
         description = "Assembles the $buildType portable Windows ZIP."
@@ -317,7 +323,8 @@ fun registerWindowsPortableArchive(
                 throw GradleException("$taskName can only run on Windows")
             }
             val directory = appDir.get().asFile
-            if (!directory.isDirectory || !directory.resolve("Metrolist.exe").isFile) {
+            val launcherExe = if (directory.resolve("Dhunlo.exe").isFile) "Dhunlo.exe" else "Metrolist.exe"
+            if (!directory.isDirectory || !directory.resolve(launcherExe).isFile) {
                 throw GradleException("Windows application directory is incomplete at ${directory.absolutePath}")
             }
             val requiredLoginHelperResources =

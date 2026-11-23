@@ -238,7 +238,7 @@ private class VerifyReleaseDistributableAction(
         check(listOf(baseArchive, windowsBaseArchive).any { it.isFile && it.length() > 0 }) {
             "Release distributable must contain a base CDS archive"
         }
-        val launcherConfig = root.walkTopDown().single { it.name == "Metrolist.cfg" }.readText()
+        val launcherConfig = root.walkTopDown().single { it.name == "Dhunlo.cfg" || it.name == "Metrolist.cfg" }.readText()
         listOf(
             "-Xshare:auto",
             "-XX:+VerifySharedSpaces",

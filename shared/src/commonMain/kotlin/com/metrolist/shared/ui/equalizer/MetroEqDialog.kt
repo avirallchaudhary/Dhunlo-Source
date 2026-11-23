@@ -31,6 +31,7 @@ import androidx.compose.ui.window.DialogProperties
 import com.metrolist.shared.generated.resources.Res
 import com.metrolist.shared.generated.resources.close
 import com.metrolist.shared.generated.resources.equalizer
+import com.metrolist.shared.generated.resources.metroeq
 import com.metrolist.shared.ui.components.BasicAlertDialog
 import com.metrolist.shared.ui.icons.MetrolistIcons
 import org.jetbrains.compose.resources.stringResource
@@ -58,7 +59,7 @@ fun MetroEqDialog(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
-                        stringResource(Res.string.equalizer),
+                        stringResource(Res.string.metroeq),
                         style = MaterialTheme.typography.titleLarge,
                         modifier = Modifier.weight(1f),
                     )

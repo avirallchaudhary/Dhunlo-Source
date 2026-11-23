@@ -2209,7 +2209,7 @@
     <string name="eq_disabled">Отключен</string>
     <string name="no_profiles">Профилей эквалайзера нет</string>
     <string name="import_profile">Импортировать профиль</string>
-    <string name="edit_in_metroeq">Изменить в MetroEQ</string>
+    <string name="edit_in_metroeq">Изменить в DHUNLO EQ</string>
     <string name="system_equalizer">Системный эквалайзер</string>
     <string name="eq_wizard">Мастер настройки AutoEQ</string>
     <string name="import_from_file">Импортировать из файла</string>
@@ -2463,7 +2463,7 @@
     <string name="playback_event_log_raw_description">Постоянная диагностика воспроизведения. При сбое воспроизведения скопируйте или экспортируйте этот необработанный журнал.</string>
     <string name="playback_event_log_raw_empty">События воспроизведения пока не зарегистрированы. Воспроизведите трек, чтобы собрать диагностические данные.</string>
     <string name="audio_boost">Предусилитель</string>
-    <string name="equalizer_usage_warning">Команда Dhunlo не несёт никакой ответственности за использование вами MetroEQ.</string>
+    <string name="equalizer_usage_warning">Команда Dhunlo не несёт никакой ответственности за использование вами DHUNLO EQ.</string>
     <string name="playlist_cover_updated">Обновлена обложка плейлиста</string>
     <string name="playlist_cover_removed">Удалена обложка плейлиста</string>
     <string name="login">Войти</string>
@@ -2530,7 +2530,7 @@
     <string name="metroeq_profile_name">Название профиля</string>
     <string name="metroeq_custom_profile">Пользовательский профиль</string>
     <string name="metroeq_preset_vocal">Вокал</string>
-    <string name="metroeq">MetroEQ</string>
+    <string name="metroeq">DHUNLO EQ</string>
     <string name="metroeq_preset_rock">Рок</string>
     <string name="metroeq_peak_reduction">Защита от перегрузки: %1$s дБ</string>
     <string name="metroeq_save_as">Сохранить как</string>

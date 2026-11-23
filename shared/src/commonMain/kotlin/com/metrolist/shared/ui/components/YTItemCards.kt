@@ -41,6 +41,7 @@ import androidx.compose.material3.carousel.CarouselItemDrawInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
@@ -273,8 +274,8 @@ fun SongListItem(
     val contentColor = colors.content
     val subtitleColor = colors.subtitle
     val linkColor = colors.link
-    val artworkShape = animatedCurrentSongArtworkShape(isCurrent, RoundedCornerShape(4.dp))
-    val artworkRotation by rememberCurrentSongArtworkRotation(isCurrent, isPlaying)
+    val artworkShape = if (isCurrent) animatedCurrentSongArtworkShape(isCurrent, RoundedCornerShape(4.dp)) else RoundedCornerShape(4.dp)
+    val artworkRotation by if (isCurrent) rememberCurrentSongArtworkRotation(isCurrent, isPlaying) else remember { mutableFloatStateOf(0f) }
     val numberedArtwork = index != null && !showThumbnail && leadingContent == null
     Row(
         modifier =
@@ -348,18 +349,33 @@ fun SongListItem(
                 modifier =
                     Modifier
                         .squareArtworkSlot(if (numberedArtwork) 36.dp else 48.dp, if (isCurrent) 1f else song.previewAspectRatio)
-                        .graphicsLayer { rotationZ = artworkRotation }
+                        .then(
+                            if (isCurrent && artworkRotation != 0f) {
+                                Modifier.graphicsLayer { rotationZ = artworkRotation }
+                            } else {
+                                Modifier
+                            },
+                        )
                         .clip(artworkShape)
                         .background(MaterialTheme.colorScheme.secondaryContainer),
                 contentAlignment = Alignment.Center,
             ) {
-                Box(
-                    modifier =
-                        Modifier
-                            .fillMaxSize()
-                            .graphicsLayer { rotationZ = -artworkRotation },
-                    contentAlignment = Alignment.Center,
-                ) {
+                if (isCurrent && artworkRotation != 0f) {
+                    Box(
+                        modifier =
+                            Modifier
+                                .fillMaxSize()
+                                .graphicsLayer { rotationZ = -artworkRotation },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        AsyncImage(
+                            url = song.previewThumbnailUrl,
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop,
+                        )
+                    }
+                } else {
                     AsyncImage(
                         url = song.previewThumbnailUrl,
                         contentDescription = null,
@@ -854,12 +870,9 @@ fun YTListItem(
                 ).padding(contentPadding),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        val shape =
-            animatedCurrentSongArtworkShape(
-                currentSong,
-                if (item is ArtistItem) artistArtworkShape(item.id) else RoundedCornerShape(8.dp),
-            )
-        val artworkRotation by rememberCurrentSongArtworkRotation(currentSong, isPlaying)
+        val baseShape = if (item is ArtistItem) artistArtworkShape(item.id) else RoundedCornerShape(8.dp)
+        val shape = if (currentSong) animatedCurrentSongArtworkShape(currentSong, baseShape) else baseShape
+        val artworkRotation by if (currentSong) rememberCurrentSongArtworkRotation(currentSong, isPlaying) else remember { mutableFloatStateOf(0f) }
 
         Box(
             modifier =
@@ -872,7 +885,13 @@ fun YTListItem(
                         ambientColor = DhunloGlassTokens.ShadowAmbient,
                         spotColor = DhunloGlassTokens.ShadowAmbient,
                     )
-                    .graphicsLayer { rotationZ = artworkRotation }
+                    .then(
+                        if (currentSong && artworkRotation != 0f) {
+                            Modifier.graphicsLayer { rotationZ = artworkRotation }
+                        } else {
+                            Modifier
+                        },
+                    )
                     .clip(shape)
                     .background(DhunloGlassTokens.ObsidianElevated)
                     .glassBorder(
@@ -882,13 +901,32 @@ fun YTListItem(
                     ),
             contentAlignment = Alignment.Center,
         ) {
-            Box(
-                modifier =
-                    Modifier
-                        .fillMaxSize()
-                        .graphicsLayer { rotationZ = -artworkRotation },
-                contentAlignment = Alignment.Center,
-            ) {
+            if (currentSong && artworkRotation != 0f) {
+                Box(
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .graphicsLayer { rotationZ = -artworkRotation },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    if (item is PlaylistItem) {
+                        PlaylistCoverImage(item, Modifier.fillMaxSize())
+                    } else if (item.thumbnail != null) {
+                        AsyncImage(
+                            url = item.displayThumbnailUrl,
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop,
+                        )
+                    }
+                    if (item is AlbumItem && onAlbumPlay != null) {
+                        AlbumPlayButton(
+                            visible = !isCurrent,
+                            onClick = onAlbumPlay,
+                        )
+                    }
+                }
+            } else {
                 if (item is PlaylistItem) {
                     PlaylistCoverImage(item, Modifier.fillMaxSize())
                 } else if (item.thumbnail != null) {
@@ -1257,8 +1295,8 @@ fun Artwork(
     isCurrent: Boolean = false,
     isPlaying: Boolean = false,
 ) {
-    val artworkShape = animatedCurrentSongArtworkShape(isCurrent, shape)
-    val artworkRotation by rememberCurrentSongArtworkRotation(isCurrent, isPlaying)
+    val artworkShape = if (isCurrent) animatedCurrentSongArtworkShape(isCurrent, shape) else shape
+    val artworkRotation by if (isCurrent) rememberCurrentSongArtworkRotation(isCurrent, isPlaying) else remember { mutableFloatStateOf(0f) }
     Box(modifier) {
         Box(
             modifier =
@@ -1270,7 +1308,13 @@ fun Artwork(
                         ambientColor = DhunloGlassTokens.ShadowAmbient,
                         spotColor = DhunloGlassTokens.ShadowAmbient,
                     )
-                    .graphicsLayer { rotationZ = artworkRotation }
+                    .then(
+                        if (isCurrent && artworkRotation != 0f) {
+                            Modifier.graphicsLayer { rotationZ = artworkRotation }
+                        } else {
+                            Modifier
+                        },
+                    )
                     .clip(artworkShape)
                     .background(DhunloGlassTokens.ObsidianElevated)
                     .glassBorder(
@@ -1280,13 +1324,37 @@ fun Artwork(
                     ),
             contentAlignment = Alignment.Center,
         ) {
-            Box(
-                modifier =
-                    Modifier
-                        .fillMaxSize()
-                        .graphicsLayer { rotationZ = -artworkRotation },
-                contentAlignment = Alignment.Center,
-            ) {
+            if (isCurrent && artworkRotation != 0f) {
+                Box(
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .graphicsLayer { rotationZ = -artworkRotation },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    if (cover != null) {
+                        Image(
+                            painterResource(cover),
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop,
+                        )
+                    } else if (localArtwork != null) {
+                        LocalPlaylistArtwork(localArtwork, Modifier.fillMaxSize(), fallbackUrl = thumbnail)
+                    } else if (isPlaylistArtwork) {
+                        PlaylistCoverImage(thumbnail, Modifier.fillMaxSize())
+                    } else if (thumbnail != null) {
+                        AsyncImage(thumbnail, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+                    } else if (icon != null) {
+                        Icon(
+                            icon,
+                            contentDescription = null,
+                            modifier = Modifier.size(iconSize).then(iconModifier),
+                            tint = DhunloGlassTokens.TextSecondary,
+                        )
+                    }
+                }
+            } else {
                 if (cover != null) {
                     Image(
                         painterResource(cover),

@@ -5,7 +5,7 @@
 <resources>
     <string name="forgotten_favorites">Forgotten favourites</string>
     <string name="audio_boost">Preamp</string>
-    <string name="equalizer_usage_warning">The Dhunlo team assumes no responsibility for your use of MetroEQ.</string>
+    <string name="equalizer_usage_warning">The Dhunlo team assumes no responsibility for your use of DHUNLO EQ.</string>
     <string name="song_cache_location_custom">Custom folder</string>
     <string name="song_cache_location_custom_desc">Folder selected with the Storage Access Framework</string>
     <string name="lyrics_text_position_center">Centre</string>
@@ -106,7 +106,7 @@
     <string name="credits_collaborators_section">Collaborators</string>
     <string name="credits_leads_section">Leads</string>
     <string name="credits_creator_section">Creator</string>
-    <string name="metroeq">MetroEQ</string>
+    <string name="metroeq">DHUNLO EQ</string>
     <string name="metroeq_peak_reduction">Peak protection: %1$s dB</string>
     <string name="metroeq_preset_flat">Flat</string>
     <string name="metroeq_preset_bass">Bass boost</string>

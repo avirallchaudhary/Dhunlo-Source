@@ -8,10 +8,14 @@
 package com.metrolist.android.ui.components
 
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -1414,33 +1418,45 @@ private fun PlayButtonWithProgress(
                 )
             }
 
-            if (isLoading) {
+            AnimatedVisibility(
+                visible = isLoading,
+                enter = fadeIn(animationSpec = tween(150)),
+                exit = fadeOut(animationSpec = tween(150)),
+            ) {
                 Box(
                     modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.4f), CircleShape),
                 )
                 ContainedLoadingIndicator(Modifier.size(32.dp))
-            } else if (isListenTogetherGuest || !isPlaying) {
+            }
+
+            AnimatedVisibility(
+                visible = !isLoading && (isListenTogetherGuest || !isPlaying),
+                enter = fadeIn(animationSpec = tween(150)),
+                exit = fadeOut(animationSpec = tween(150)),
+            ) {
                 Box(
                     modifier =
                         Modifier
                             .fillMaxSize()
                             .background(Color.Black.copy(alpha = 0.4f), CircleShape),
-                )
-                Icon(
-                    imageVector =
-                        if (isListenTogetherGuest) {
-                            if (isMuted) {
-                                MetrolistIcons.AutoMirrored.Filled.VolumeUp
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        imageVector =
+                            if (isListenTogetherGuest) {
+                                if (isMuted) {
+                                    MetrolistIcons.AutoMirrored.Filled.VolumeUp
+                                } else {
+                                    MetrolistIcons.AutoMirrored.Filled.VolumeOff
+                                }
                             } else {
-                                MetrolistIcons.AutoMirrored.Filled.VolumeOff
-                            }
-                        } else {
-                            MetrolistIcons.Outlined.PlayArrow
-                        },
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(20.dp),
-                )
+                                MetrolistIcons.Outlined.PlayArrow
+                            },
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(20.dp),
+                    )
+                }
             }
         }
     }

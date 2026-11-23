@@ -2172,7 +2172,7 @@
     <string name="player_type_expressive">Expressif</string>
     <string name="player_type_classic">Classique</string>
     <string name="slider_standard">Standard</string>
-    <string name="edit_in_metroeq">Modifier dans MetroEQ</string>
+    <string name="edit_in_metroeq">Modifier dans DHUNLO EQ</string>
     <string name="settings_appearance_overview">Thème, polices et apparence du lecteur</string>
     <string name="settings_android_auto_overview">Playlists en voiture et destination des ajouts rapides</string>
     <string name="settings_about_overview">Contributeurs, liens communautaires et licences</string>
@@ -2406,7 +2406,7 @@
     <string name="settings_storage_summary">%1$s utilisés • %2$s disponibles</string>
     <string name="live">EN DIRECT</string>
     <string name="audio_boost">Préampli</string>
-    <string name="equalizer_usage_warning">L'équipe de Dhunlo décline toute responsabilité quant à votre utilisation de MetroEQ.</string>
+    <string name="equalizer_usage_warning">L'équipe de Dhunlo décline toute responsabilité quant à votre utilisation de DHUNLO EQ.</string>
     <string name="login">Se connecter</string>
     <string name="scrobble_login_failed">Échec de la connexion</string>
     <string name="together">Ensemble</string>
@@ -2419,7 +2419,7 @@
     <string name="metroeq_profile_name">Nom du profil</string>
     <string name="metroeq_custom_profile">Profil personnalisé</string>
     <string name="metroeq_preset_vocal">Boost des voix</string>
-    <string name="metroeq">MetroEQ</string>
+    <string name="metroeq">DHUNLO EQ</string>
     <string name="metroeq_preset_rock">Rock</string>
     <string name="metroeq_save_as">Sauvegarder</string>
     <string name="metroeq_peak_reduction">Protection contre les pics : %1$s dB</string>

@@ -28,6 +28,7 @@ import com.metrolist.shared.generated.resources.Res
 import com.metrolist.shared.generated.resources.back
 import com.metrolist.shared.generated.resources.close
 import com.metrolist.shared.generated.resources.equalizer
+import com.metrolist.shared.generated.resources.metroeq
 import com.metrolist.shared.generated.resources.playback_speed
 import com.metrolist.shared.generated.resources.tempo_and_pitch
 import com.metrolist.shared.ui.components.ModalBottomSheet
@@ -74,7 +75,7 @@ fun MetroEqSheet(
                             if (tempoPitch) {
                                 if (varispeed) Res.string.playback_speed else Res.string.tempo_and_pitch
                             } else {
-                                Res.string.equalizer
+                                Res.string.metroeq
                             },
                         ),
                         style = MaterialTheme.typography.titleLarge,
