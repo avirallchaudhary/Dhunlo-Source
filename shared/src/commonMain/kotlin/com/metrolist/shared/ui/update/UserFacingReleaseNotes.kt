@@ -34,6 +34,40 @@ object UserFacingReleaseNotes {
             ),
         )
 
+    private val V1_0_2_NOTES =
+        listOf(
+            UserFacingReleaseNote(
+                title = "Screen-Off Audio Playback",
+                description = "Fixed unexpected playback interruptions when the phone screen is turned off.",
+                icon = MetrolistIcons.Outlined.BarChart,
+            ),
+            UserFacingReleaseNote(
+                title = "Network Disconnection Recovery",
+                description = "Automatic and seamless playback resumption when reconnecting to Wi-Fi or mobile networks.",
+                icon = MetrolistIcons.Filled.Sync,
+            ),
+            UserFacingReleaseNote(
+                title = "Faster Track Transitions",
+                description = "Improved preloading and latency for immediate next-song playback.",
+                icon = MetrolistIcons.Outlined.Update,
+            ),
+            UserFacingReleaseNote(
+                title = "Instant Video Mode",
+                description = "Optimized audio-to-video switching with streamlined stream caching.",
+                icon = MetrolistIcons.Filled.NewReleases,
+            ),
+            UserFacingReleaseNote(
+                title = "Display Wake Lock for Videos",
+                description = "Prevents the display from sleeping while watching music videos.",
+                icon = MetrolistIcons.Outlined.Security,
+            ),
+            UserFacingReleaseNote(
+                title = "Smooth Scrolling & Performance",
+                description = "Optimized scrolling responsiveness and faster artwork loading throughout the app.",
+                icon = MetrolistIcons.Filled.Verified,
+            ),
+        )
+
     private val TECHNICAL_PATTERNS =
         listOf(
             "sha-256",
@@ -51,6 +85,7 @@ object UserFacingReleaseNotes {
             "package:",
             "package id",
             "package name",
+            "application name",
             "version:",
             "version code",
             "version name",
@@ -66,10 +101,24 @@ object UserFacingReleaseNotes {
             "compilesdk",
             "minsdk",
             "release assets",
+            "attached assets",
+            "release identification",
             "signing verification",
+            "signer dn",
+            "certificate sha-256",
+            "public key sha-256",
             "source code",
             "source tag",
             "source repository",
+            "exact commit",
+            "commit sha",
+            "build instructions",
+            "legal notices",
+            "fallback alias",
+            "compatibility alias",
+            "provenance audit",
+            "release package",
+            "official release package",
             "github.com",
             "gpl",
             "general public license",
@@ -90,6 +139,9 @@ object UserFacingReleaseNotes {
         val cleanVersion = version.removePrefix("v").trim()
         if (cleanVersion == "1.0.1") {
             return V1_0_1_NOTES
+        }
+        if (cleanVersion == "1.0.2") {
+            return V1_0_2_NOTES
         }
 
         val parsed = parseBody(rawBody)
@@ -118,7 +170,28 @@ object UserFacingReleaseNotes {
             val lower = line.lowercase()
 
             if (line.startsWith("#")) {
-                inTechnicalSection = TECHNICAL_PATTERNS.any { lower.contains(it) }
+                val headerText = lower.trimStart('#').trim()
+                val isWhatsNewHeader = headerText.contains("what's new") ||
+                    headerText.contains("whats new") ||
+                    headerText.contains("changelog") ||
+                    headerText.contains("highlight") ||
+                    headerText.contains("changes") ||
+                    headerText.contains("features") ||
+                    headerText.contains("improvements") ||
+                    headerText.contains("bug fix")
+                if (isWhatsNewHeader) {
+                    inTechnicalSection = false
+                    continue
+                }
+                inTechnicalSection = TECHNICAL_PATTERNS.any { headerText.contains(it) } ||
+                    headerText.contains("identification") ||
+                    headerText.contains("artifact") ||
+                    headerText.contains("asset") ||
+                    headerText.contains("verification") ||
+                    headerText.contains("signing") ||
+                    headerText.contains("compliance") ||
+                    headerText.contains("source code") ||
+                    headerText.contains("details")
                 continue
             }
 
@@ -168,12 +241,24 @@ object UserFacingReleaseNotes {
                 }
             }
 
-        val title = rawTitle.removePrefix("**").removeSuffix("**").removePrefix("__").removeSuffix("__").trim()
-        val desc = rawDesc.removePrefix("**").removeSuffix("**").removePrefix("__").removeSuffix("__").trim()
+        val title = rawTitle
+            .removePrefix("**").removeSuffix("**")
+            .removePrefix("__").removeSuffix("__")
+            .removePrefix("`").removeSuffix("`")
+            .trim()
+        val desc = rawDesc
+            .removePrefix("**").removeSuffix("**")
+            .removePrefix("__").removeSuffix("__")
+            .removePrefix("`").removeSuffix("`")
+            .trim()
 
         if (title.isBlank()) return null
         val lowerTitle = title.lowercase()
-        if (lowerTitle in listOf("version", "package", "upstream", "build", "size", "sha-256", "sha256", "checksum")) return null
+        if (lowerTitle in listOf(
+                "version", "package", "upstream", "build", "size", "sha-256", "sha256", "checksum",
+                "application name", "attached assets", "release identification", "signing verification"
+            )
+        ) return null
 
         val icon = selectIcon(title, desc)
         return UserFacingReleaseNote(

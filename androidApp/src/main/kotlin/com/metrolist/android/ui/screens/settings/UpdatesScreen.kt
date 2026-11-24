@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -50,6 +51,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.app.NotificationManagerCompat
@@ -99,6 +101,7 @@ import com.metrolist.shared.generated.resources.settings_share_apk_summary
 import com.metrolist.shared.generated.resources.update_pending
 import com.metrolist.shared.generated.resources.updates_auto_check
 import com.metrolist.shared.generated.resources.updates_changelog
+import com.metrolist.shared.generated.resources.updates_changelog_preview
 import com.metrolist.shared.generated.resources.updates_changelogs
 import com.metrolist.shared.generated.resources.updates_check
 import com.metrolist.shared.generated.resources.updates_checking
@@ -381,20 +384,6 @@ fun UpdateDetailsScreen(
     onNavigateBack: () -> Unit,
     crashRecovery: Boolean = false,
 ) {
-    val fileSizeFormatter =
-        if (crashRecovery) {
-            val units =
-                FileSizeUnits(
-                    byte = stringResource(Res.string.crash_file_size_unit_byte),
-                    kilobyte = stringResource(Res.string.crash_file_size_unit_kilobyte),
-                    megabyte = stringResource(Res.string.crash_file_size_unit_megabyte),
-                    gigabyte = stringResource(Res.string.crash_file_size_unit_gigabyte),
-                    terabyte = stringResource(Res.string.crash_file_size_unit_terabyte),
-                )
-            remember(units) { { bytes: Long -> formatFileSize(bytes, units) } }
-        } else {
-            rememberFileSizeFormatter()
-        }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val state by AppUpdateManager.state.collectAsState()
@@ -538,7 +527,7 @@ fun UpdateDetailsScreen(
                         modifier = buttonModifier,
                         shapes = ButtonDefaults.shapes(),
                     ) {
-                        Text(stringResource(if (crashRecovery) Res.string.crash_updates_install else Res.string.updates_install))
+                        Text("Install Update")
                     }
                 }
 
@@ -548,7 +537,7 @@ fun UpdateDetailsScreen(
                         modifier = buttonModifier,
                         shapes = ButtonDefaults.shapes(),
                     ) {
-                        Text(stringResource(if (crashRecovery) Res.string.crash_action_download else Res.string.action_download))
+                        Text("Download Update")
                     }
                 }
 
@@ -589,10 +578,44 @@ fun UpdateDetailsScreen(
                     .fillMaxSize()
                     .padding(paddingValues)
                     .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+                    .padding(horizontal = 20.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
-            Text(title, style = MaterialTheme.typography.headlineLarge)
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(
+                    text = "DHUNLO",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                Text(
+                    text = if (release != null) "DHUNLO ${release.version}" else "DHUNLO ${AppUpdateManager.currentVersion}",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Text(
+                    text =
+                        when {
+                            current is AppUpdateState.Error -> {
+                                when (current.failure) {
+                                    UpdateFailure.NO_APK -> stringResource(if (crashRecovery) Res.string.crash_updates_release_unavailable else Res.string.updates_release_unavailable)
+                                    UpdateFailure.DIGEST -> stringResource(if (crashRecovery) Res.string.crash_updates_digest_failed else Res.string.updates_digest_failed)
+                                    UpdateFailure.DOWNLOAD -> stringResource(if (crashRecovery) Res.string.crash_updates_download_failed else Res.string.updates_download_failed)
+                                    UpdateFailure.INSTALL -> stringResource(if (crashRecovery) Res.string.crash_updates_installer_failed else Res.string.updates_installer_failed)
+                                    else -> stringResource(if (crashRecovery) Res.string.crash_updates_error else Res.string.updates_error)
+                                }
+                            }
+                            current is AppUpdateState.Downloading -> "Downloading update… (${current.progress}%)"
+                            current is AppUpdateState.Downloaded -> "Update ready to install. Tap Install Update to continue."
+                            release != null -> "A new version of DHUNLO is available with playback stability improvements and performance optimizations."
+                            current is AppUpdateState.Checking -> stringResource(if (crashRecovery) Res.string.crash_updates_checking else Res.string.updates_checking)
+                            else -> stringResource(if (crashRecovery) Res.string.crash_updates_no_updates else Res.string.updates_no_updates)
+                        },
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (current is AppUpdateState.Error) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
 
             if (installing || current is AppUpdateState.Checking) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -629,47 +652,35 @@ fun UpdateDetailsScreen(
                 )
             }
 
-            if (release == null) {
-                UpdateInfo(
-                    version = AppUpdateManager.currentVersion,
-                    versionLabel = stringResource(if (crashRecovery) Res.string.crash_updates_version else Res.string.updates_version),
-                    details =
-                        listOf(
-                            stringResource(if (crashRecovery) Res.string.crash_updates_last_check else Res.string.updates_last_check) to
-                                (
-                                    if (crashRecovery) {
-                                        (state as? AppUpdateState.UpToDate)?.checkedAt ?: 0L
-                                    } else {
-                                        AppSettings.shared.lastUpdateCheckTimestamp
-                                    }
-                                ).takeIf { it > 0 }
-                                    ?.let { DateFormat.getTimeInstance(DateFormat.SHORT).format(Date(it)) }
-                                    .orEmpty(),
-                        ),
-                )
-            } else {
-                UpdateInfo(
-                    version = release.version,
-                    versionLabel = stringResource(if (crashRecovery) Res.string.crash_updates_version else Res.string.updates_version),
-                    details =
-                        listOf(
-                            stringResource(if (crashRecovery) Res.string.crash_updates_size else Res.string.updates_size) to
-                                release.apk
-                                    ?.size
-                                    ?.let(fileSizeFormatter)
-                                    .orEmpty(),
-                            stringResource(if (crashRecovery) Res.string.crash_updates_date else Res.string.updates_date) to
-                                release.publishedAt?.substringBefore('T').orEmpty(),
-                        ),
-                )
+            if (release != null) {
                 Text(
-                    stringResource(if (crashRecovery) Res.string.crash_updates_changelog else Res.string.updates_changelog),
-                    style = MaterialTheme.typography.headlineLarge,
+                    text = stringResource(Res.string.updates_changelog_preview),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
                 val notes = remember(release.version, release.body) {
                     UserFacingReleaseNotes.getNotes(release.version, release.body)
                 }
                 ReleaseNotesList(notes)
+            } else if (current !is AppUpdateState.Error && current !is AppUpdateState.Checking) {
+                val lastCheckTime =
+                    (
+                        if (crashRecovery) {
+                            (state as? AppUpdateState.UpToDate)?.checkedAt ?: 0L
+                        } else {
+                            AppSettings.shared.lastUpdateCheckTimestamp
+                        }
+                    ).takeIf { it > 0 }
+                        ?.let { DateFormat.getTimeInstance(DateFormat.SHORT).format(Date(it)) }
+
+                if (!lastCheckTime.isNullOrBlank()) {
+                    Text(
+                        text = "${stringResource(if (crashRecovery) Res.string.crash_updates_last_check else Res.string.updates_last_check)}: $lastCheckTime",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
         }
     }

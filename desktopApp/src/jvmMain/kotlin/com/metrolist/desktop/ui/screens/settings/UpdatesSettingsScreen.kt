@@ -66,8 +66,9 @@ import com.metrolist.shared.ui.components.AlertDialog
 import com.metrolist.shared.ui.components.PopupContent
 import com.metrolist.shared.ui.icons.MetrolistIcons
 import com.metrolist.shared.ui.settings.settingsPageSubtitle
-import com.metrolist.shared.ui.update.GitHubMarkdown
+import com.metrolist.shared.ui.update.ReleaseNotesList
 import com.metrolist.shared.ui.update.UpdateInfo
+import com.metrolist.shared.ui.update.UserFacingReleaseNotes
 import com.metrolist.shared.ui.utils.rememberFileSizeFormatter
 import com.metrolist.shared.ui.utils.verticalScrollWithDrag
 import com.metrolist.shared.update.UPDATE_CHANNEL_NIGHTLY
@@ -254,7 +255,10 @@ fun UpdatesSettingsScreen(colorScheme: ColorScheme) {
                                 }
                             },
                     )
-                    GitHubMarkdown(release.body.orEmpty())
+                    val notes = remember(release.version, release.body) {
+                        UserFacingReleaseNotes.getNotes(release.version, release.body)
+                    }
+                    ReleaseNotesList(notes)
                 }
             },
             confirmButton = {
